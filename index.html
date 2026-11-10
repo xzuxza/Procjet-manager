@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workspace — Twoje Cele, Zadania & Vision Board</title>
+    <title>Workspace — Cele, Zadania & Tablice Marzeń</title>
     <!-- Google Fonts & Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,6 +13,7 @@
             background: linear-gradient(135deg, #fbf8f5 0%, #f4ede4 100%);
             color: #2d2621;
             min-height: 100vh;
+            overflow-x: hidden;
         }
         .glass-panel {
             background: rgba(255, 255, 255, 0.85);
@@ -24,19 +25,40 @@
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(224, 122, 95, 0.25);
         }
+        /* Płótno Vision Board */
+        #vision-canvas {
+            position: relative;
+            width: 100%;
+            height: 75vh;
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px dashed rgba(224, 122, 95, 0.3);
+            border-radius: 2rem;
+            overflow: hidden;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .vision-item {
+            position: absolute;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            transition: box-shadow 0.2s;
+        }
+        .vision-item:active {
+            cursor: grabbing;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col md:flex-row">
 
     <!-- PANEL BOCZNY (Sidebar) -->
-    <aside class="w-full md:w-72 glass-panel border-r border-amber-900/10 p-6 flex flex-col justify-between shrink-0 shadow-sm">
+    <aside class="w-full md:w-72 glass-panel border-r border-amber-900/10 p-6 flex flex-col justify-between shrink-0 shadow-sm z-20">
         <div>
             <!-- Nagłówek panelu -->
             <div class="flex items-center gap-3 mb-6">
                 <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#e07a5f] to-[#f4a261] text-white flex items-center justify-center font-bold text-sm shadow-md">✨</div>
                 <div>
                     <h1 class="font-bold text-slate-800 text-base">Moje Centrum</h1>
-                    <p class="text-xs text-amber-900/60">Projekty & Motywacja</p>
+                    <p class="text-xs text-amber-900/60">Projekty & Wizja</p>
                 </div>
             </div>
 
@@ -45,22 +67,25 @@
                 <button onclick="openUpcomingView()" id="sidebar-upcoming-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 text-slate-600 hover:bg-amber-100/40">
                     <span>🔥 Nadchodzące deadline'y</span>
                 </button>
-                <button onclick="openVisionBoardView()" id="sidebar-vision-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 text-slate-600 hover:bg-amber-100/40">
-                    <span>🖼️ Tablica Marzeń (Vision Board)</span>
-                </button>
             </div>
 
-            <!-- Sekcja projektów -->
+            <!-- Sekcja projektów celów -->
             <div class="flex justify-between items-center mb-3">
-                <span class="text-xs font-bold uppercase tracking-wider text-amber-900/50">Projekty</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-amber-900/50">Projekty (Cele)</span>
                 <button onclick="openProjectModal()" class="text-xs text-[#e07a5f] hover:text-[#d87053] font-bold bg-amber-50 hover:bg-amber-100/70 px-2.5 py-1 rounded-lg transition-colors">
                     + Nowy
                 </button>
             </div>
-            
-            <div id="projects-list" class="space-y-1.5 mb-6">
-                <!-- Tutaj wpadną projekty -->
+            <div id="projects-list" class="space-y-1.5 mb-6"></div>
+
+            <!-- Sekcja Tablic Marzeń (Vision Boards) -->
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-amber-900/50">Tablice Marzeń</span>
+                <button onclick="openVisionBoardModal()" class="text-xs text-[#e07a5f] hover:text-[#d87053] font-bold bg-amber-50 hover:bg-amber-100/70 px-2.5 py-1 rounded-lg transition-colors">
+                    + Nowa tablica
+                </button>
             </div>
+            <div id="vision-boards-list" class="space-y-1.5 mb-6"></div>
         </div>
 
         <div class="border-t border-amber-950/5 pt-4 text-xs text-amber-900/40 text-center">
@@ -82,21 +107,27 @@
             <div id="upcoming-tasks-list" class="space-y-3 max-w-3xl"></div>
         </div>
 
-        <!-- WIDOK: TABLICA MARZEŃ (Vision Board) -->
-        <div id="vision-view" class="hidden">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
+        <!-- WIDOK: SWOBODNA TABLICA MARZEŃ (Vision Board Canvas) -->
+        <div id="vision-canvas-view" class="hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
-                    <h2 class="text-2xl font-bold text-slate-800">🖼️ Tablica Marzeń</h2>
-                    <p class="text-sm text-amber-900/60 mt-1">Twoja osobista mapa celów i inspiracji z Pinteresta</p>
+                    <div class="flex items-center gap-2">
+                        <h2 id="vision-board-title" class="text-2xl font-bold text-slate-800"></h2>
+                        <button onclick="editVisionBoardName()" class="text-slate-400 hover:text-[#e07a5f] text-xs p-1" title="Edytuj nazwę tablicy">✏️</button>
+                    </div>
+                    <p class="text-sm text-amber-900/60 mt-1">Przeciągaj obrazki, zmieniaj ich rozmiar i układaj kolaż marzeń</p>
                 </div>
-                <button onclick="openVisionModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
-                    + Dodaj inspirację
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="deleteActiveVisionBoard()" class="text-xs text-amber-900/40 hover:text-rose-600 transition-colors bg-white/50 px-3 py-2 rounded-xl border border-amber-950/5">🗑️ Usuń tablicę</button>
+                    <button onclick="openAddImageModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
+                        + Dodaj inspirację (zdjęcie/plik)
+                    </button>
+                </div>
             </div>
 
-            <!-- Galeria inspiracji -->
-            <div id="vision-gallery" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Generowane dynamicznie zdjęcia -->
+            <!-- Płótno z obrazkami -->
+            <div id="vision-canvas">
+                <!-- Tutaj użytkownik przesuwa i skaluje obrazki -->
             </div>
         </div>
 
@@ -144,7 +175,6 @@
 
             <!-- Tablica Kanban (4 kolumny) -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <!-- Kolumna 1: Pula zadań -->
                 <div class="glass-panel rounded-2xl p-4 border-t-4 border-slate-400 shadow-sm">
                     <div class="flex justify-between items-center mb-4 px-1">
                         <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">📁 Pula</h3>
@@ -153,7 +183,6 @@
                     <div id="column-pool" class="space-y-4 min-h-[300px]"></div>
                 </div>
 
-                <!-- Kolumna 2: Do podjęcia -->
                 <div class="glass-panel rounded-2xl p-4 border-t-4 border-amber-400 shadow-sm">
                     <div class="flex justify-between items-center mb-4 px-1">
                         <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">🎯 Do podjęcia</h3>
@@ -162,7 +191,6 @@
                     <div id="column-todo" class="space-y-4 min-h-[300px]"></div>
                 </div>
 
-                <!-- Kolumna 3: W trakcie -->
                 <div class="glass-panel rounded-2xl p-4 border-t-4 border-[#f4a261] shadow-sm">
                     <div class="flex justify-between items-center mb-4 px-1">
                         <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">⚡ W trakcie</h3>
@@ -171,7 +199,6 @@
                     <div id="column-inprogress" class="space-y-4 min-h-[300px]"></div>
                 </div>
 
-                <!-- Kolumna 4: Zrobione -->
                 <div class="glass-panel rounded-2xl p-4 border-t-4 border-emerald-400 shadow-sm">
                     <div class="flex justify-between items-center mb-4 px-1">
                         <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">✨ Zrobione</h3>
@@ -187,7 +214,7 @@
     <!-- Modale -->
     <div id="project-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
         <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
-            <h3 class="text-lg font-bold text-slate-800 mb-4">Nowy projekt</h3>
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Nowy projekt (cel)</h3>
             <form onsubmit="handleCreateProject(event)">
                 <div class="mb-4">
                     <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Nazwa projektu</label>
@@ -201,22 +228,40 @@
         </div>
     </div>
 
-    <!-- Modal: Dodawanie inspiracji do Vision Board -->
-    <div id="vision-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
+    <!-- Modal: Nowa Tablica Marzeń -->
+    <div id="visionboard-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
         <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
-            <h3 class="text-lg font-bold text-slate-800 mb-4">Dodaj obraz inspiracji</h3>
-            <form onsubmit="handleCreateVision(event)">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Nowa Tablica Marzeń</h3>
+            <form onsubmit="handleCreateVisionBoard(event)">
                 <div class="mb-4">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Link do obrazka (URL)</label>
-                    <input type="url" id="vision-url" required placeholder="https://..." class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Podpis / Cel (opcjonalnie)</label>
-                    <input type="text" id="vision-caption" placeholder="np. Moje wymarzone Dolomity 🏔️" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Nazwa tablicy</label>
+                    <input type="text" id="visionboard-name" required placeholder="np. Cele Roczne ✨" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                 </div>
                 <div class="flex justify-end gap-2 mt-6">
-                    <button type="button" onclick="closeVisionModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
-                    <button type="submit" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-md">Dodaj</button>
+                    <button type="button" onclick="closeVisionBoardModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
+                    <button type="submit" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-md">Utwórz</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Dodawanie obrazka do aktywnej Tablicy Marzeń -->
+    <div id="addimage-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
+        <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-md w-full shadow-xl border border-amber-900/10">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Dodaj obraz na tablicę</h3>
+            <form onsubmit="handleAddImage(event)">
+                <div class="mb-4">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Wybierz plik z urządzenia (JPG/PNG)</label>
+                    <input type="file" id="image-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-[#e07a5f] hover:file:bg-amber-100">
+                </div>
+                <div class="text-center text-xs text-amber-900/40 my-2">— lub —</div>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Wklej link do obrazka (URL)</label>
+                    <input type="url" id="image-url" placeholder="https://..." class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                </div>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="button" onclick="closeAddImageModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
+                    <button type="submit" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-md">Dodaj obraz</button>
                 </div>
             </form>
         </div>
@@ -269,25 +314,29 @@
 
     <!-- Skrypt aplikacji -->
     <script>
-        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v7')) || {
+        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v8')) || {
             projects: [],
-            visionBoard: [],
+            visionBoards: [],
             activeProjectId: null,
+            activeVisionBoardId: null,
             activeMainTaskId: null,
             currentView: 'upcoming'
         };
 
         function saveData() {
-            localStorage.setItem('pro_workspace_data_v7', JSON.stringify(data));
+            localStorage.setItem('pro_workspace_data_v8', JSON.stringify(data));
             render();
         }
 
         function openProjectModal() { document.getElementById('project-modal').classList.remove('hidden'); }
         function closeProjectModal() { document.getElementById('project-modal').classList.add('hidden'); document.getElementById('project-name').value = ''; }
-        
-        function openVisionModal() { document.getElementById('vision-modal').classList.remove('hidden'); }
-        function closeVisionModal() { document.getElementById('vision-modal').classList.add('hidden'); document.getElementById('vision-url').value = ''; document.getElementById('vision-caption').value = ''; }
 
+        function openVisionBoardModal() { document.getElementById('visionboard-modal').classList.remove('hidden'); }
+        function closeVisionBoardModal() { document.getElementById('visionboard-modal').classList.add('hidden'); document.getElementById('visionboard-name').value = ''; }
+
+        function openAddImageModal() { document.getElementById('addimage-modal').classList.remove('hidden'); }
+        function closeAddImageModal() { document.getElementById('addimage-modal').classList.add('hidden'); document.getElementById('image-url').value = ''; document.getElementById('image-file').value = ''; }
+        
         function openMainTaskModal() { document.getElementById('maintask-modal').classList.remove('hidden'); }
         function closeMainTaskModal() { document.getElementById('maintask-modal').classList.add('hidden'); document.getElementById('maintask-title').value = ''; }
 
@@ -301,13 +350,7 @@
         function openUpcomingView() {
             data.currentView = 'upcoming';
             data.activeProjectId = null;
-            data.activeMainTaskId = null;
-            saveData();
-        }
-
-        function openVisionBoardView() {
-            data.currentView = 'vision';
-            data.activeProjectId = null;
+            data.activeVisionBoardId = null;
             data.activeMainTaskId = null;
             saveData();
         }
@@ -325,24 +368,105 @@
             closeProjectModal();
         }
 
-        function handleCreateVision(e) {
+        function handleCreateVisionBoard(e) {
             e.preventDefault();
-            const url = document.getElementById('vision-url').value;
-            const caption = document.getElementById('vision-caption').value;
-            if (!data.visionBoard) data.visionBoard = [];
-            data.visionBoard.push({
-                id: 'vis_' + Date.now(),
-                url,
-                caption
-            });
-            closeVisionModal();
+            const name = document.getElementById('visionboard-name').value;
+            const newBoard = {
+                id: 'board_' + Date.now(),
+                name: name,
+                items: []
+            };
+            if (!data.visionBoards) data.visionBoards = [];
+            data.visionBoards.push(newBoard);
+            setActiveVisionBoard(newBoard.id);
+            closeVisionBoardModal();
+        }
+
+        function handleAddImage(e) {
+            e.preventDefault();
+            const urlInput = document.getElementById('image-url').value;
+            const fileInput = document.getElementById('image-file').files[0];
+
+            if (fileInput) {
+                const reader = new FileReader();
+                reader.onload = function(uploadEvent) {
+                    saveImageToActiveBoard(uploadEvent.target.result);
+                };
+                reader.readAsDataURL(fileInput);
+            } else if (urlInput) {
+                saveImageToActiveBoard(urlInput);
+            }
+        }
+
+        function saveImageToActiveBoard(imgSrc) {
+            const board = data.visionBoards.find(b => b.id === data.activeVisionBoardId);
+            if (board) {
+                if (!board.items) board.items = [];
+                board.items.push({
+                    id: 'img_' + Date.now(),
+                    url: imgSrc,
+                    x: 50 + (board.items.length * 20) % 200,
+                    y: 50 + (board.items.length * 20) % 150,
+                    width: 220
+                });
+                closeAddImageModal();
+                saveData();
+            }
+        }
+
+        function deleteVisionItem(itemId, event) {
+            event.stopPropagation();
+            const board = data.visionBoards.find(b => b.id === data.activeVisionBoardId);
+            if (board) {
+                board.items = board.items.filter(item => item.id !== itemId);
+                saveData();
+            }
+        }
+
+        function updateItemSize(itemId, newWidth) {
+            const board = data.visionBoards.find(b => b.id === data.activeVisionBoardId);
+            if (board) {
+                const item = board.items.find(i => i.id === itemId);
+                if (item) {
+                    item.width = parseInt(newWidth);
+                    // Zapis bezpośredni bez pełnego renderowania, żeby nie przerywać suwaka
+                    localStorage.setItem('pro_workspace_data_v8', JSON.stringify(data));
+                    const el = document.getElementById(itemId);
+                    if (el) el.style.width = item.width + 'px';
+                }
+            }
+        }
+
+        function setActiveProject(id) {
+            data.activeProjectId = id;
+            data.activeVisionBoardId = null;
+            data.currentView = 'project';
+            data.activeMainTaskId = null;
             saveData();
         }
 
-        function deleteVisionItem(id) {
-            if (confirm('Usunąć ten obraz z tablicy marzeń?')) {
-                data.visionBoard = data.visionBoard.filter(v => v.id !== id);
+        function setActiveVisionBoard(id) {
+            data.activeVisionBoardId = id;
+            data.activeProjectId = null;
+            data.currentView = 'vision_canvas';
+            data.activeMainTaskId = null;
+            saveData();
+        }
+
+        function editVisionBoardName() {
+            const board = data.visionBoards.find(b => b.id === data.activeVisionBoardId);
+            if (!board) return;
+            const newName = prompt('Edytuj nazwę tablicy:', board.name);
+            if (newName !== null && newName.trim() !== '') {
+                board.name = newName.trim();
                 saveData();
+            }
+        }
+
+        function deleteActiveVisionBoard() {
+            if (confirm('Usunąć tę tablicę marzeń?')) {
+                data.visionBoards = data.visionBoards.filter(b => b.id !== data.activeVisionBoardId);
+                openUpcomingView();
             }
         }
 
@@ -485,17 +609,10 @@
                     const sub = mainTask.subtasks.find(s => s.id === subtaskId);
                     if (sub) {
                         sub.notes = notes;
-                        localStorage.setItem('pro_workspace_data_v7', JSON.stringify(data));
+                        localStorage.setItem('pro_workspace_data_v8', JSON.stringify(data));
                     }
                 }
             }
-        }
-
-        function setActiveProject(id) {
-            data.activeProjectId = id;
-            data.currentView = 'project';
-            data.activeMainTaskId = null;
-            saveData();
         }
 
         function openTaskDetail(mainTaskId) {
@@ -510,41 +627,56 @@
             saveData();
         }
 
+        // Renderowanie ogólne
         function render() {
             const projectsListEl = document.getElementById('projects-list');
+            const visionBoardsListEl = document.getElementById('vision-boards-list');
             const upcomingViewEl = document.getElementById('upcoming-view');
-            const visionViewEl = document.getElementById('vision-view');
+            const visionCanvasViewEl = document.getElementById('vision-canvas-view');
             const projectViewEl = document.getElementById('project-view');
             const taskDetailViewEl = document.getElementById('task-detail-view');
             const sidebarUpcomingBtn = document.getElementById('sidebar-upcoming-btn');
-            const sidebarVisionBtn = document.getElementById('sidebar-vision-btn');
 
             projectsListEl.innerHTML = '';
+            visionBoardsListEl.innerHTML = '';
 
-            // Obsługa podświetlenia przycisków w menu
-            sidebarUpcomingBtn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-2 flex items-center gap-2 ${data.currentView === 'upcoming' ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
-            sidebarVisionBtn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 ${data.currentView === 'vision' ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
+            sidebarUpcomingBtn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 ${data.currentView === 'upcoming' ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
 
-            data.projects.forEach(proj => {
-                const isActive = proj.id === data.activeProjectId && data.currentView !== 'upcoming' && data.currentView !== 'vision';
-                const btn = document.createElement('button');
-                btn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-between ${isActive ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
-                btn.innerHTML = `<span>${escapeHtml(proj.name)}</span>`;
-                btn.onclick = () => setActiveProject(proj.id);
-                projectsListEl.appendChild(btn);
-            });
+            // Render projektów celów
+            if (data.projects) {
+                data.projects.forEach(proj => {
+                    const isActive = proj.id === data.activeProjectId && data.currentView !== 'upcoming';
+                    const btn = document.createElement('button');
+                    btn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-between ${isActive ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
+                    btn.innerHTML = `<span>${escapeHtml(proj.name)}</span>`;
+                    btn.onclick = () => setActiveProject(proj.id);
+                    projectsListEl.appendChild(btn);
+                });
+            }
+
+            // Render tablic marzeń w menu
+            if (data.visionBoards) {
+                data.visionBoards.forEach(board => {
+                    const isActive = board.id === data.activeVisionBoardId;
+                    const btn = document.createElement('button');
+                    btn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-between ${isActive ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
+                    btn.innerHTML = `<span>🖼️ ${escapeHtml(board.name)}</span>`;
+                    btn.onclick = () => setActiveVisionBoard(board.id);
+                    visionBoardsListEl.appendChild(btn);
+                });
+            }
 
             upcomingViewEl.classList.add('hidden');
-            visionViewEl.classList.add('hidden');
+            visionCanvasViewEl.classList.add('hidden');
             projectViewEl.classList.add('hidden');
             taskDetailViewEl.classList.add('hidden');
 
             if (data.currentView === 'upcoming') {
                 upcomingViewEl.classList.remove('hidden');
                 renderUpcomingView();
-            } else if (data.currentView === 'vision') {
-                visionViewEl.classList.remove('hidden');
-                renderVisionBoard();
+            } else if (data.currentView === 'vision_canvas') {
+                visionCanvasViewEl.classList.remove('hidden');
+                renderVisionCanvas();
             } else if (data.currentView === 'project') {
                 projectViewEl.classList.remove('hidden');
                 renderProjectView();
@@ -612,31 +744,79 @@
             });
         }
 
-        function renderVisionBoard() {
-            const galleryEl = document.getElementById('vision-gallery');
-            galleryEl.innerHTML = '';
+        // Renderowanie płótna Vision Board z przesuwaniem i skalowaniem
+        function renderVisionCanvas() {
+            const board = data.visionBoards.find(b => b.id === data.activeVisionBoardId);
+            if (!board) {
+                openUpcomingView();
+                return;
+            }
 
-            const items = data.visionBoard || [];
-            if (items.length === 0) {
-                galleryEl.innerHTML = `
-                    <div class="col-span-full glass-panel p-12 text-center rounded-3xl text-amber-900/50 text-sm">
-                        Twój Vision Board jest jeszcze pusty. Kliknij "+ Dodaj inspirację", aby wkleić pierwsze zdjęcia z Pinteresta!
+            document.getElementById('vision-board-title').innerText = board.name;
+            const canvasEl = document.getElementById('vision-canvas');
+            canvasEl.innerHTML = '';
+
+            if (!board.items || board.items.length === 0) {
+                canvasEl.innerHTML = `
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-amber-900/50 text-sm p-4 text-center">
+                        Ta tablica marzeń jest pusta. Kliknij "+ Dodaj inspirację", aby dodać pierwsze zdjęcia lub pliki!
                     </div>
                 `;
                 return;
             }
 
-            items.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'glass-panel rounded-3xl overflow-hidden border border-amber-900/10 shadow-sm relative group flex flex-col';
-                card.innerHTML = `
-                    <div class="relative overflow-hidden aspect-4/3 bg-amber-50">
-                        <img src="${escapeHtml(item.url)}" alt="Inspiracja" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=600&q=80'">
-                        <button onclick="deleteVisionItem('${item.id}')" class="absolute top-3 right-3 bg-black/40 hover:bg-rose-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+            board.items.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'vision-item glass-panel p-2 rounded-2xl shadow-md border border-amber-900/20 bg-white/90';
+                itemDiv.id = item.id;
+                itemDiv.style.left = item.x + 'px';
+                itemDiv.style.top = item.y + 'px';
+                itemDiv.style.width = item.width + 'px';
+
+                itemDiv.innerHTML = `
+                    <div class="flex justify-between items-center mb-1 px-1 cursor-grab">
+                        <span class="text-[10px] font-bold text-amber-900/50 uppercase tracking-wider">🫲 Przesuwaj</span>
+                        <button onclick="deleteVisionItem('${item.id}', event)" class="text-slate-300 hover:text-rose-600 text-xs px-1">✕</button>
                     </div>
-                    ${item.caption ? `<div class="p-4 text-xs font-semibold text-slate-700 bg-white/50 border-t border-amber-900/5">${escapeHtml(item.caption)}</div>` : ''}
+                    <div class="overflow-hidden rounded-xl bg-amber-50 aspect-square mb-2">
+                        <img src="${escapeHtml(item.url)}" class="w-full h-full object-cover pointer-events-none" onerror="this.src='https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=600&q=80'">
+                    </div>
+                    <div class="px-1 pb-1">
+                        <input type="range" min="100" max="500" value="${item.width}" oninput="updateItemSize('${item.id}', this.value)" class="w-full accent-[#e07a5f] cursor-pointer" title="Zmień rozmiar">
+                    </div>
                 `;
-                galleryEl.appendChild(card);
+
+                // Logika przeciągania (drag and drop myszką i palcem)
+                let isDragging = false;
+                let startX, startY;
+
+                itemDiv.addEventListener('pointerdown', (e) => {
+                    // Ignoruj jeśli kliknięto w suwak zmiany rozmiaru lub przycisk usuwania
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+                    isDragging = true;
+                    startX = e.clientX - item.x;
+                    startY = e.clientY - item.y;
+                    itemDiv.setPointerCapture(e.pointerId);
+                    itemDiv.style.zIndex = 1000;
+                });
+
+                itemDiv.addEventListener('pointermove', (e) => {
+                    if (!isDragging) return;
+                    item.x = e.clientX - startX;
+                    item.y = e.clientY - startY;
+                    itemDiv.style.left = item.x + 'px';
+                    itemDiv.style.top = item.y + 'px';
+                });
+
+                itemDiv.addEventListener('pointerup', (e) => {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    itemDiv.releasePointerCapture(e.pointerId);
+                    itemDiv.style.zIndex = 1;
+                    localStorage.setItem('pro_workspace_data_v8', JSON.stringify(data));
+                });
+
+                canvasEl.appendChild(itemDiv);
             });
         }
 
