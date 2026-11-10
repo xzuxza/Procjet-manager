@@ -3,51 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workspace — System Zarządzania</title>
+    <title>Workspace — Twoje Cele & Projekty</title>
     <!-- Google Fonts & Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #fbf8f5 0%, #f4ede4 100%);
+            color: #2d2621;
+            min-height: 100vh;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(235, 225, 215, 0.8);
         }
         .sidebar-item-active {
-            background-color: #0f172a;
+            background: linear-gradient(135deg, #e07a5f 0%, #d87053 100%);
             color: #ffffff;
+            box-shadow: 0 4px 12px rgba(224, 122, 95, 0.25);
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col md:flex-row">
 
     <!-- PANEL BOCZNY (Sidebar) -->
-    <aside class="w-full md:w-72 bg-white border-r border-slate-200 p-6 flex flex-col justify-between shrink-0">
+    <aside class="w-full md:w-72 glass-panel border-r border-amber-900/10 p-6 flex flex-col justify-between shrink-0 shadow-sm">
         <div>
             <!-- Nagłówek panelu -->
             <div class="flex items-center gap-3 mb-8">
-                <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm">W</div>
+                <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#e07a5f] to-[#f4a261] text-white flex items-center justify-center font-bold text-sm shadow-md">✨</div>
                 <div>
-                    <h1 class="font-bold text-slate-900 text-base">Workspace</h1>
-                    <p class="text-xs text-slate-400">Cele & Projekty</p>
+                    <h1 class="font-bold text-slate-800 text-base">Moje Centrum</h1>
+                    <p class="text-xs text-amber-900/60">Projekty & Cele</p>
                 </div>
             </div>
 
             <!-- Sekcja projektów -->
             <div class="flex justify-between items-center mb-3">
-                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Projekty</span>
-                <button onclick="openProjectModal()" class="text-xs text-slate-600 hover:text-slate-900 font-semibold bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-md transition-colors">
+                <span class="text-xs font-bold uppercase tracking-wider text-amber-900/50">Projekty</span>
+                <button onclick="openProjectModal()" class="text-xs text-[#e07a5f] hover:text-[#d87053] font-bold bg-amber-50 hover:bg-amber-100/70 px-2.5 py-1 rounded-lg transition-colors">
                     + Nowy
                 </button>
             </div>
             
-            <div id="projects-list" class="space-y-1 mb-6">
+            <div id="projects-list" class="space-y-1.5 mb-6">
                 <!-- Tutaj wpadną projekty -->
             </div>
         </div>
 
-        <div class="border-t border-slate-100 pt-4 text-xs text-slate-400">
-            System organizacji celów v2.0
+        <div class="border-t border-amber-950/5 pt-4 text-xs text-amber-900/40 text-center">
+            System stworzony dla Ciebie 🤎
         </div>
     </aside>
 
@@ -55,112 +62,102 @@
     <main class="flex-1 p-6 md:p-10 overflow-y-auto">
         <!-- Aktywny projekt i widok Kanban -->
         <div id="active-project-container" class="hidden">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-slate-200 pb-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
                     <div class="flex items-center gap-3">
-                        <h2 id="active-project-title" class="text-2xl font-bold text-slate-900"></h2>
-                        <button onclick="deleteActiveProject()" class="text-xs text-slate-400 hover:text-rose-600 transition-colors" title="Usuń projekt">🗑️</button>
+                        <h2 id="active-project-title" class="text-2xl font-bold text-slate-800"></h2>
+                        <button onclick="deleteActiveProject()" class="text-xs text-amber-900/40 hover:text-rose-600 transition-colors bg-white/50 px-2 py-1 rounded-lg border border-amber-950/5" title="Usuń projekt">🗑️ Usuń projekt</button>
                     </div>
-                    <p class="text-sm text-slate-500 mt-1">Zarządzaj zadaniami i mniejszymi krokami</p>
+                    <p class="text-sm text-amber-900/60 mt-1">Zarządzaj zadaniami, podzadaniami i notatkami w etapach</p>
                 </div>
-                <button onclick="openTaskModal()" class="bg-slate-900 hover:bg-slate-800 text-white font-medium px-4 py-2.5 rounded-xl text-sm shadow-sm transition-all flex items-center gap-2">
-                    <span>+ Dodaj główne zadanie</span>
+                <button onclick="openTaskModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
+                    + Dodaj główne zadanie
                 </button>
             </div>
 
-            <!-- Tablica Kanban (3 kolumny w profesjonalnym stylu) -->
+            <!-- Tablica Kanban (3 kolumny w przytulnym stylu) -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Kolumna: Do podjęcia -->
-                <div class="bg-slate-100/70 rounded-2xl p-4 border border-slate-200/60">
+                <div class="glass-panel rounded-2xl p-4 border-t-4 border-amber-400/80 shadow-sm">
                     <div class="flex justify-between items-center mb-4 px-1">
-                        <h3 class="font-semibold text-slate-700 text-sm flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-slate-400"></span> Do podjęcia
-                        </h3>
-                        <span id="count-todo" class="bg-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded-full font-medium">0</span>
+                        <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">🎯 Do podjęcia</h3>
+                        <span id="count-todo" class="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
                     </div>
-                    <div id="column-todo" class="space-y-3 min-h-[300px]"></div>
+                    <div id="column-todo" class="space-y-4 min-h-[300px]"></div>
                 </div>
 
                 <!-- Kolumna: W trakcie -->
-                <div class="bg-slate-100/70 rounded-2xl p-4 border border-slate-200/60">
+                <div class="glass-panel rounded-2xl p-4 border-t-4 border-[#f4a261] shadow-sm">
                     <div class="flex justify-between items-center mb-4 px-1">
-                        <h3 class="font-semibold text-slate-700 text-sm flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-amber-500"></span> W trakcie
-                        </h3>
-                        <span id="count-inprogress" class="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full font-medium">0</span>
+                        <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">⚡ W trakcie</h3>
+                        <span id="count-inprogress" class="bg-orange-100 text-orange-800 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
                     </div>
-                    <div id="column-inprogress" class="space-y-3 min-h-[300px]"></div>
+                    <div id="column-inprogress" class="space-y-4 min-h-[300px]"></div>
                 </div>
 
                 <!-- Kolumna: Zrobione -->
-                <div class="bg-slate-100/70 rounded-2xl p-4 border border-slate-200/60">
+                <div class="glass-panel rounded-2xl p-4 border-t-4 border-emerald-400 shadow-sm">
                     <div class="flex justify-between items-center mb-4 px-1">
-                        <h3 class="font-semibold text-slate-700 text-sm flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Zrobione
-                        </h3>
-                        <span id="count-done" class="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">0</span>
+                        <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">✨ Zrobione</h3>
+                        <span id="count-done" class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
                     </div>
-                    <div id="column-done" class="space-y-3 min-h-[300px]"></div>
+                    <div id="column-done" class="space-y-4 min-h-[300px]"></div>
                 </div>
             </div>
         </div>
 
         <!-- Stan pusty -->
-        <div id="empty-state" class="text-center py-24 bg-white rounded-2xl border border-slate-200 shadow-sm max-w-xl mx-auto mt-12">
-            <div class="w-12 h-12 bg-slate-100 text-slate-400 rounded-xl flex items-center justify-center mx-auto mb-4 font-bold text-lg">📁</div>
-            <h3 class="text-lg font-semibold text-slate-800">Brak wybranego projektu</h3>
-            <p class="text-sm text-slate-500 mt-1 mb-6">Wybierz projekt z menu po lewej stronie lub stwórz nowy.</p>
-            <button onclick="openProjectModal()" class="bg-slate-900 hover:bg-slate-800 text-white font-medium px-5 py-2.5 rounded-xl text-sm transition-all">
+        <div id="empty-state" class="text-center py-24 glass-panel rounded-3xl shadow-sm max-w-xl mx-auto mt-12 border border-amber-900/10">
+            <div class="w-14 h-14 bg-amber-50 text-[#e07a5f] rounded-2xl flex items-center justify-center mx-auto mb-4 font-bold text-xl shadow-inner">💡</div>
+            <h3 class="text-lg font-bold text-slate-800">Brak wybranego projektu</h3>
+            <p class="text-sm text-amber-900/60 mt-1 mb-6">Wybierz projekt z menu po lewej stronie lub stwórz nowy, aby zacząć planowanie!</p>
+            <button onclick="openProjectModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white font-medium px-6 py-2.5 rounded-xl text-sm shadow-md transition-all">
                 Stwórz projekt
             </button>
         </div>
     </main>
 
     <!-- Modal: Nowy Projekt -->
-    <div id="project-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl border border-slate-100">
-            <h3 class="text-lg font-bold text-slate-900 mb-4">Nowy projekt</h3>
+    <div id="project-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
+        <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Nowy projekt</h3>
             <form onsubmit="handleCreateProject(event)">
                 <div class="mb-4">
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Nazwa projektu</label>
-                    <input type="text" id="project-name" required placeholder="np. Via Ferraty 🧗‍♀️" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Nazwa projektu (możesz dodać emoji)</label>
+                    <input type="text" id="project-name" required placeholder="np. Via Ferraty 🧗‍♀️" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                 </div>
                 <div class="flex justify-end gap-2 mt-6">
                     <button type="button" onclick="closeProjectModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
-                    <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-xl">Utwórz</button>
+                    <button type="submit" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-md">Utwórz</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal: Nowe Zadanie (Główne zadanie + podzadania) -->
-    <div id="task-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-            <h3 class="text-lg font-bold text-slate-900 mb-4">Nowe zadanie główne</h3>
+    <!-- Modal: Nowe Zadanie (Tylko główne zadanie i deadline) -->
+    <div id="task-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
+        <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-md w-full shadow-xl border border-amber-900/10">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Nowe zadanie główne</h3>
             <form onsubmit="handleCreateTask(event)">
                 <div class="mb-4">
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Tytuł zadania</label>
-                    <input type="text" id="task-title" required placeholder="np. Zakup sprzętu wspinaczkowego" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Tytuł zadania</label>
+                    <input type="text" id="task-title" required placeholder="np. Zakup sprzętu wspinaczkowego" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                 </div>
                 <div class="mb-4">
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Deadline</label>
-                    <input type="date" id="task-deadline" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Deadline</label>
+                    <input type="date" id="task-deadline" required class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                 </div>
                 <div class="mb-4">
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Etap początkowy</label>
-                    <select id="task-status" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 bg-white">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Etap początkowy</label>
+                    <select id="task-status" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                         <option value="todo">Do podjęcia</option>
                         <option value="inprogress">W trakcie</option>
                         <option value="done">Zrobione</option>
                     </select>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Mniejsze kroki / podzadania (wpisz każde w nowej linijce)</label>
-                    <textarea id="task-subtasks" rows="3" placeholder="np.&#10;Sprawdzić ceny w sklepie X&#10;Przymierzyć kask w sklepie stacjonarnym&#10;Zamówić online" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"></textarea>
-                </div>
                 <div class="flex justify-end gap-2 mt-6">
                     <button type="button" onclick="closeTaskModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
-                    <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-xl">Dodaj zadanie</button>
+                    <button type="submit" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-md">Dodaj zadanie</button>
                 </div>
             </form>
         </div>
@@ -168,13 +165,13 @@
 
     <!-- Skrypt aplikacji -->
     <script>
-        let data = JSON.parse(localStorage.getItem('pro_tasks_app_data')) || {
+        let data = JSON.parse(localStorage.getItem('cozy_tasks_app_data')) || {
             projects: [],
             activeProjectId: null
         };
 
         function saveData() {
-            localStorage.setItem('pro_tasks_app_data', JSON.stringify(data));
+            localStorage.setItem('cozy_tasks_app_data', JSON.stringify(data));
             render();
         }
 
@@ -186,7 +183,6 @@
             document.getElementById('task-modal').classList.add('hidden'); 
             document.getElementById('task-title').value = ''; 
             document.getElementById('task-deadline').value = ''; 
-            document.getElementById('task-subtasks').value = ''; 
         }
 
         function handleCreateProject(e) {
@@ -216,14 +212,6 @@
             const title = document.getElementById('task-title').value;
             const deadline = document.getElementById('task-deadline').value;
             const status = document.getElementById('task-status').value;
-            const subtasksRaw = document.getElementById('task-subtasks').value;
-
-            // Parsowanie podzadań z linii tekstu
-            const subtasks = subtasksRaw
-                .split('\n')
-                .map(s => s.trim())
-                .filter(s => s.length > 0)
-                .map(s => ({ id: 'sub_' + Math.random(), title: s, completed: false }));
 
             const proj = data.projects.find(p => p.id === data.activeProjectId);
             if (proj) {
@@ -232,11 +220,30 @@
                     title,
                     deadline,
                     status,
-                    subtasks
+                    subtasks: [],
+                    notes: ''
                 });
             }
             closeTaskModal();
             saveData();
+        }
+
+        // Dodawanie podzadania do istniejącego taska
+        function addSubtask(taskId, event) {
+            event.preventDefault();
+            const input = document.getElementById('subtask_input_' + taskId);
+            const title = input.value.trim();
+            if (!title) return;
+
+            const proj = data.projects.find(p => p.id === data.activeProjectId);
+            if (proj) {
+                const task = proj.tasks.find(t => t.id === taskId);
+                if (task) {
+                    if (!task.subtasks) task.subtasks = [];
+                    task.subtasks.push({ id: 'sub_' + Date.now(), title, completed: false });
+                    saveData();
+                }
+            }
         }
 
         function toggleSubtask(taskId, subtaskId) {
@@ -249,6 +256,30 @@
                         sub.completed = !sub.completed;
                         saveData();
                     }
+                }
+            }
+        }
+
+        function deleteSubtask(taskId, subtaskId) {
+            const proj = data.projects.find(p => p.id === data.activeProjectId);
+            if (proj) {
+                const task = proj.tasks.find(t => t.id === taskId);
+                if (task) {
+                    task.subtasks = task.subtasks.filter(s => s.id !== subtaskId);
+                    saveData();
+                }
+            }
+        }
+
+        // Zapisywanie notatek dla zadania
+        function saveTaskNotes(taskId, notes) {
+            const proj = data.projects.find(p => p.id === data.activeProjectId);
+            if (proj) {
+                const task = proj.tasks.find(t => t.id === taskId);
+                if (task) {
+                    task.notes = notes;
+                    // Nie wywołujemy pełnego render(), żeby nie tracić focusu z pola tekstowego notatki przy pisaniu
+                    localStorage.setItem('cozy_tasks_app_data', JSON.stringify(data));
                 }
             }
         }
@@ -295,7 +326,7 @@
             data.projects.forEach(proj => {
                 const isActive = proj.id === data.activeProjectId;
                 const btn = document.createElement('button');
-                btn.className = `w-full text-left px-3.5 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-between ${isActive ? 'sidebar-item-active shadow-xs' : 'text-slate-600 hover:bg-slate-100'}`;
+                btn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-between ${isActive ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
                 btn.innerHTML = `<span>${escapeHtml(proj.name)}</span>`;
                 btn.onclick = () => setActiveProject(proj.id);
                 projectsListEl.appendChild(btn);
@@ -304,7 +335,7 @@
             const activeProj = data.projects.find(p => p.id === data.activeProjectId);
             if (!activeProj) return;
 
-            document.getElementById('active-project-titleinnerText') || (document.getElementById('active-project-title').innerText = activeProj.name);
+            document.getElementById('active-project-title').innerText = activeProj.name;
 
             const colTodo = document.getElementById('column-todo');
             const colInProgress = document.getElementById('column-inprogress');
@@ -319,42 +350,57 @@
             activeProj.tasks.forEach(task => {
                 counts[task.status]++;
                 const card = document.createElement('div');
-                card.className = 'bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs relative group transition-all hover:shadow-md';
+                card.className = 'glass-panel bg-white/90 p-4 rounded-2xl border border-amber-900/10 shadow-xs relative transition-all hover:shadow-md';
                 
                 const today = new Date().toISOString().split('T')[0];
                 const isOverdue = task.deadline < today && task.status !== 'done';
 
-                // Generowanie HTML dla podzadań
-                let subtasksHtml = '';
+                // Podzadania
+                let subtasksHtml = '<div class="mt-3 pt-3 border-t border-amber-950/5 space-y-1.5"><div class="text-[11px] font-bold text-amber-900/40 uppercase mb-1">Mniejsze kroki:</div>';
                 if (task.subtasks && task.subtasks.length > 0) {
-                    subtasksHtml = '<div class="mt-3 pt-3 border-t border-slate-100 space-y-1.5">';
                     task.subtasks.forEach(sub => {
                         subtasksHtml += `
-                            <label class="flex items-center gap-2 text-xs text-slate-600 cursor-pointer hover:text-slate-900">
-                                <input type="checkbox" ${sub.completed ? 'checked' : ''} onchange="toggleSubtask('${task.id}', '${sub.id}')" class="rounded border-slate-300 text-slate-900 focus:ring-0">
-                                <span class="${sub.completed ? 'line-through text-slate-400' : ''}">${escapeHtml(sub.title)}</span>
-                            </label>
+                            <div class="flex items-center justify-between text-xs text-slate-700 group/sub">
+                                <label class="flex items-center gap-2 cursor-pointer flex-1 py-0.5">
+                                    <input type="checkbox" ${sub.completed ? 'checked' : ''} onchange="toggleSubtask('${task.id}', '${sub.id}')" class="rounded border-amber-300 text-[#e07a5f] focus:ring-0">
+                                    <span class="${sub.completed ? 'line-through text-slate-400' : ''}">${escapeHtml(sub.title)}</span>
+                                </label>
+                                <button onclick="deleteSubtask('${task.id}', '${sub.id}')" class="text-slate-300 hover:text-rose-500 opacity-0 group-hover/sub:opacity-100 transition-opacity px-1">✕</button>
+                            </div>
                         `;
                     });
-                    subtasksHtml += '</div>';
                 }
+                subtasksHtml += `
+                    <form onsubmit="addSubtask('${task.id}', event)" class="flex gap-1 mt-2">
+                        <input type="text" id="subtask_input_${task.id}" placeholder="+ Dodaj krok..." class="flex-1 px-2 py-1 text-xs rounded-lg border border-amber-900/10 focus:outline-none focus:ring-1 focus:ring-[#e07a5f] bg-white/50">
+                    </form>
+                </div>`;
+
+                // Notatki
+                let notesHtml = `
+                    <div class="mt-3 pt-3 border-t border-amber-950/5">
+                        <label class="block text-[11px] font-bold text-amber-900/40 uppercase mb-1">Notatki / aktualizacje:</label>
+                        <textarea oninput="saveTaskNotes('${task.id}', this.value)" placeholder="Wpisz notatkę..." rows="2" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-amber-900/10 focus:outline-none focus:ring-1 focus:ring-[#e07a5f] bg-white/50 text-slate-700 resize-y">${task.notes || ''}</textarea>
+                    </div>
+                `;
 
                 card.innerHTML = `
                     <div class="flex justify-between items-start gap-2 mb-2">
-                        <span class="font-semibold text-slate-900 text-sm">${escapeHtml(task.title)}</span>
+                        <span class="font-bold text-slate-800 text-sm">${escapeHtml(task.title)}</span>
                         <button onclick="deleteTask('${task.id}')" class="text-slate-300 hover:text-rose-600 text-xs transition-colors">✕</button>
                     </div>
                     
                     ${subtasksHtml}
+                    ${notesHtml}
 
-                    <div class="flex justify-between items-center text-xs mt-4 pt-2 border-t border-slate-50">
-                        <span class="${isOverdue ? 'text-rose-600 font-semibold bg-rose-50 px-2 py-0.5 rounded' : 'text-slate-400'}">
+                    <div class="flex justify-between items-center text-xs mt-4 pt-3 border-t border-amber-950/5">
+                        <span class="${isOverdue ? 'text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded' : 'text-amber-900/60 font-medium'}">
                             📅 ${task.deadline} ${isOverdue ? '⚠️' : ''}
                         </span>
                         <div class="flex gap-1">
-                            ${task.status !== 'todo' ? `<button onclick="moveTask('${task.id}', 'todo')" title="Do podjęcia" class="px-1.5 py-1 rounded bg-slate-50 hover:bg-slate-100 text-[10px]">⬅️</button>` : ''}
-                            ${task.status !== 'inprogress' ? `<button onclick="moveTask('${task.id}', 'inprogress')" title="W trakcie" class="px-1.5 py-1 rounded bg-slate-50 hover:bg-slate-100 text-[10px]">⚡</button>` : ''}
-                            ${task.status !== 'done' ? `<button onclick="moveTask('${task.id}', 'done')" title="Zrobione" class="px-1.5 py-1 rounded bg-slate-50 hover:bg-slate-100 text-[10px]">✅</button>` : ''}
+                            ${task.status !== 'todo' ? `<button onclick="moveTask('${task.id}', 'todo')" title="Do podjęcia" class="px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[10px] font-semibold text-amber-800">⬅️</button>` : ''}
+                            ${task.status !== 'inprogress' ? `<button onclick="moveTask('${task.id}', 'inprogress')" title="W trakcie" class="px-2 py-1 rounded bg-orange-50 hover:bg-orange-100 text-[10px] font-semibold text-orange-800">⚡</button>` : ''}
+                            ${task.status !== 'done' ? `<button onclick="moveTask('${task.id}', 'done')" title="Zrobione" class="px-2 py-1 rounded bg-emerald-50 hover:bg-emerald-100 text-[10px] font-semibold text-emerald-800">✅</button>` : ''}
                         </div>
                     </div>
                 `;
