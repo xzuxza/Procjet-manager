@@ -45,6 +45,27 @@
         .vision-item:active {
             cursor: grabbing;
         }
+        /* Styl narożnego uchwytu zmiany rozmiaru */
+        .resize-handle {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 22px;
+            height: 22px;
+            background: rgba(224, 122, 95, 0.85);
+            color: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            cursor: se-resize;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            transition: background 0.2s;
+        }
+        .resize-handle:hover {
+            background: rgb(224, 122, 95);
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col md:flex-row">
@@ -207,7 +228,7 @@
 
     </main>
 
-    <!-- Modale (z dodanym autocomplete="off") -->
+    <!-- Modale -->
     <div id="project-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
         <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
             <h3 class="text-lg font-bold text-slate-800 mb-4">Nowy projekt (cel)</h3>
@@ -322,7 +343,7 @@
 
     <!-- Skrypt aplikacji -->
     <script>
-        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v11')) || {
+        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v12')) || {
             projects: [],
             visionBoards: [],
             activeProjectId: null,
@@ -334,7 +355,7 @@
         let deadlineTarget = { type: null, id: null };
 
         function saveData() {
-            localStorage.setItem('pro_workspace_data_v11', JSON.stringify(data));
+            localStorage.setItem('pro_workspace_data_v12', JSON.stringify(data));
             render();
         }
 
@@ -489,19 +510,6 @@
             if (board) {
                 board.items = board.items.filter(item => item.id !== itemId);
                 saveData();
-            }
-        }
-
-        function updateItemSize(itemId, newWidth) {
-            const board = data.visionBoards.find(b => b.id === data.activeVisionBoardId);
-            if (board) {
-                const item = board.items.find(i => i.id === itemId);
-                if (item) {
-                    item.width = parseInt(newWidth);
-                    localStorage.setItem('pro_workspace_data_v11', JSON.stringify(data));
-                    const el = document.getElementById(itemId);
-                    if (el) el.style.width = item.width + 'px';
-                }
             }
         }
 
@@ -670,7 +678,7 @@
                     const sub = mainTask.subtasks.find(s => s.id === subtaskId);
                     if (sub) {
                         sub.notes = notes;
-                        localStorage.setItem('pro_workspace_data_v11', JSON.stringify(data));
+                        localStorage.setItem('pro_workspace_data_v12', JSON.stringify(data));
                     }
                 }
             }
@@ -814,6 +822,7 @@
             });
         }
 
+        // Renderowanie płótna Vision Board z czystym kafelkiem i narożnym uchwytem zmiany rozmiaru
         function renderVisionCanvas() {
             const board = data.visionBoards.find(b => b.id === data.activeVisionBoardId);
             if (!board) {
@@ -836,30 +845,29 @@
 
             board.items.forEach(item => {
                 const itemDiv = document.createElement('div');
-                itemDiv.className = 'vision-item glass-panel p-2 rounded-2xl shadow-md border border-amber-900/20 bg-white/90';
+                itemDiv.className = 'vision-item glass-panel p-1.5 rounded-2xl shadow-md border border-amber-900/20 bg-white/90';
                 itemDiv.id = item.id;
                 itemDiv.style.left = item.x + 'px';
                 itemDiv.style.top = item.y + 'px';
-                itemDiv.style.width = item.width + 'px';
+                itemDiv.style.width = (item.width || 220) + 'px';
 
                 itemDiv.innerHTML = `
-                    <div class="flex justify-between items-center mb-1 px-1 cursor-grab">
-                        <span class="text-[10px] font-bold text-amber-900/50 uppercase tracking-wider">🫲 Przesuwaj</span>
-                        <button onclick="deleteVisionItem('${item.id}', event)" class="text-slate-300 hover:text-rose-600 text-xs px-1">✕</button>
+                    <div class="flex justify-end items-center mb-1 px-1">
+                        <button onclick="deleteVisionItem('${item.id}', event)" class="text-slate-300 hover:text-rose-600 text-xs px-1 font-bold" title="Usuń obrazek">✕</button>
                     </div>
-                    <div class="overflow-hidden rounded-xl bg-amber-50 aspect-square mb-2">
+                    <div class="overflow-hidden rounded-xl bg-amber-50 aspect-square">
                         <img src="${escapeHtml(item.url)}" class="w-full h-full object-cover pointer-events-none" onerror="this.src='https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=600&q=80'">
                     </div>
-                    <div class="px-1 pb-1">
-                        <input type="range" min="100" max="500" value="${item.width}" oninput="updateItemSize('${item.id}', this.value)" class="w-full accent-[#e07a5f] cursor-pointer" title="Zmień rozmiar">
-                    </div>
+                    <div class="resize-handle" title="Przeciągnij, aby zmienić rozmiar">◢</div>
                 `;
 
+                // Przesuwanie obrazka (całe okienko)
                 let isDragging = false;
                 let startX, startY;
 
                 itemDiv.addEventListener('pointerdown', (e) => {
-                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+                    // Jeśli kliknięto w uchwyt zmiany rozmiaru lub przycisk usuwania, nie uruchamiaj przesuwania
+                    if (e.target.classList.contains('resize-handle') || e.target.tagName === 'BUTTON') return;
                     isDragging = true;
                     startX = e.clientX - item.x;
                     startY = e.clientY - item.y;
@@ -880,7 +888,39 @@
                     isDragging = false;
                     itemDiv.releasePointerCapture(e.pointerId);
                     itemDiv.style.zIndex = 1;
-                    localStorage.setItem('pro_workspace_data_v11', JSON.stringify(data));
+                    localStorage.setItem('pro_workspace_data_v12', JSON.stringify(data));
+                });
+
+                // Zmiana rozmiaru za pomocą narożnego uchwytu
+                const handleEl = itemDiv.querySelector('.resize-handle');
+                let isResizing = false;
+                let startWidth, startMouseX;
+
+                handleEl.addEventListener('pointerdown', (e) => {
+                    e.stopPropagation();
+                    isResizing = true;
+                    startWidth = item.width || 220;
+                    startMouseX = e.clientX;
+                    handleEl.setPointerCapture(e.pointerId);
+                    itemDiv.style.zIndex = 1000;
+                });
+
+                handleEl.addEventListener('pointermove', (e) => {
+                    if (!isResizing) return;
+                    const dx = e.clientX - startMouseX;
+                    let newWidth = startWidth + dx;
+                    if (newWidth < 100) newWidth = 100; // Minimalna szerokość
+                    if (newWidth > 600) newWidth = 600; // Maksymalna szerokość
+                    item.width = newWidth;
+                    itemDiv.style.width = newWidth + 'px';
+                });
+
+                handleEl.addEventListener('pointerup', (e) => {
+                    if (!isResizing) return;
+                    isResizing = false;
+                    handleEl.releasePointerCapture(e.pointerId);
+                    itemDiv.style.zIndex = 1;
+                    localStorage.setItem('pro_workspace_data_v12', JSON.stringify(data));
                 });
 
                 canvasEl.appendChild(itemDiv);
