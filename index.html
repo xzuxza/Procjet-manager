@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workspace — Twoje Cele & Projekty</title>
+    <title>Workspace — Twoje Cele & Kalendarz</title>
     <!-- Google Fonts & Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -24,6 +24,9 @@
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(224, 122, 95, 0.25);
         }
+        /* Ukrywanie scrollbara w kalendarzu dla ładnego wyglądu */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col md:flex-row">
@@ -36,9 +39,14 @@
                 <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#e07a5f] to-[#f4a261] text-white flex items-center justify-center font-bold text-sm shadow-md">✨</div>
                 <div>
                     <h1 class="font-bold text-slate-800 text-base">Moje Centrum</h1>
-                    <p class="text-xs text-amber-900/60">Projekty & Cele</p>
+                    <p class="text-xs text-amber-900/60">Projekty & Kalendarz</p>
                 </div>
             </div>
+
+            <!-- Przycisk widoku kalendarza ogólnego -->
+            <button onclick="openCalendarView()" id="sidebar-calendar-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 text-slate-600 hover:bg-amber-100/40">
+                <span>📅 Kalendarz Tygodniowy</span>
+            </button>
 
             <!-- Sekcja projektów -->
             <div class="flex justify-between items-center mb-3">
@@ -60,27 +68,71 @@
 
     <!-- GŁÓWNA TREŚĆ -->
     <main class="flex-1 p-6 md:p-10 overflow-y-auto">
-        <!-- Aktywny projekt i widok Kanban -->
-        <div id="active-project-container" class="hidden">
+        
+        <!-- WIDOK: KALENDARZ TYGODNIOWY -->
+        <div id="calendar-view" class="hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">📅 Kalendarz Tygodniowy</h2>
+                    <p class="text-sm text-amber-900/60 mt-1">Przeglądaj zadania z deadline'ami na poszczególne dni</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="changeWeek(-1)" class="glass-panel px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-white transition-all">← Poprzedni tydzień</button>
+                    <button onclick="resetWeek()" class="glass-panel px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-white transition-all text-[#e07a5f]">Dzisiaj</button>
+                    <button onclick="changeWeek(1)" class="glass-panel px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-white transition-all">Następny tydzień →</button>
+                </div>
+            </div>
+
+            <!-- Pasek przewijalnych dni tygodnia -->
+            <div id="weekly-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4">
+                <!-- Generowane dynamicznie dni tygodnia -->
+            </div>
+        </div>
+
+        <!-- WIDOK: Lista Zadań Głównych w Projekcie -->
+        <div id="project-view" class="hidden">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
                     <div class="flex items-center gap-3">
-                        <h2 id="active-project-title" class="text-2xl font-bold text-slate-800"></h2>
+                        <h2 id="project-view-title" class="text-2xl font-bold text-slate-800"></h2>
                         <button onclick="deleteActiveProject()" class="text-xs text-amber-900/40 hover:text-rose-600 transition-colors bg-white/50 px-2 py-1 rounded-lg border border-amber-950/5" title="Usuń projekt">🗑️ Usuń projekt</button>
                     </div>
-                    <p class="text-sm text-amber-900/60 mt-1">Zarządzaj zadaniami, podzadaniami i notatkami w etapach</p>
+                    <p class="text-sm text-amber-900/60 mt-1">Zadania główne projektu i ich stopień ukończenia</p>
                 </div>
-                <button onclick="openTaskModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
-                    + Dodaj główne zadanie
+                <button onclick="openMainTaskModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
+                    + Dodaj zadanie główne
                 </button>
             </div>
 
-            <!-- Tablica Kanban (3 kolumny w przytulnym stylu) -->
+            <div id="main-tasks-list" class="space-y-4">
+                <!-- Lista zadań głównych -->
+            </div>
+        </div>
+
+        <!-- WIDOK: Szczegóły Zadania Głównego (Tablica Kanban z mniejszymi zadaniami) -->
+        <div id="task-detail-view" class="hidden">
+            <div class="flex items-center gap-3 mb-6">
+                <button onclick="backToProjectView()" class="glass-panel px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-white transition-all shadow-xs flex items-center gap-1">
+                    ← Powrót do projektu
+                </button>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
+                <div>
+                    <h2 id="detail-task-title" class="text-2xl font-bold text-slate-800"></h2>
+                    <p class="text-sm text-amber-900/60 mt-1">Pula zadań, stan w trakcie i wykonane kroki</p>
+                </div>
+                <button onclick="openSubtaskModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
+                    + Dodaj mniejsze zadanie
+                </button>
+            </div>
+
+            <!-- Tablica Kanban (3 kolumny) -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Kolumna: Do podjęcia -->
+                <!-- Kolumna: Pula zadań / Do podjęcia -->
                 <div class="glass-panel rounded-2xl p-4 border-t-4 border-amber-400/80 shadow-sm">
                     <div class="flex justify-between items-center mb-4 px-1">
-                        <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">🎯 Do podjęcia</h3>
+                        <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">🎯 Pula / Do podjęcia</h3>
                         <span id="count-todo" class="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
                     </div>
                     <div id="column-todo" class="space-y-4 min-h-[300px]"></div>
@@ -106,24 +158,15 @@
             </div>
         </div>
 
-        <!-- Stan pusty -->
-        <div id="empty-state" class="text-center py-24 glass-panel rounded-3xl shadow-sm max-w-xl mx-auto mt-12 border border-amber-900/10">
-            <div class="w-14 h-14 bg-amber-50 text-[#e07a5f] rounded-2xl flex items-center justify-center mx-auto mb-4 font-bold text-xl shadow-inner">💡</div>
-            <h3 class="text-lg font-bold text-slate-800">Brak wybranego projektu</h3>
-            <p class="text-sm text-amber-900/60 mt-1 mb-6">Wybierz projekt z menu po lewej stronie lub stwórz nowy, aby zacząć planowanie!</p>
-            <button onclick="openProjectModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white font-medium px-6 py-2.5 rounded-xl text-sm shadow-md transition-all">
-                Stwórz projekt
-            </button>
-        </div>
     </main>
 
-    <!-- Modal: Nowy Projekt -->
+    <!-- Modale -->
     <div id="project-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
         <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
             <h3 class="text-lg font-bold text-slate-800 mb-4">Nowy projekt</h3>
             <form onsubmit="handleCreateProject(event)">
                 <div class="mb-4">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Nazwa projektu (możesz dodać emoji)</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Nazwa projektu</label>
                     <input type="text" id="project-name" required placeholder="np. Via Ferraty 🧗‍♀️" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                 </div>
                 <div class="flex justify-end gap-2 mt-6">
@@ -134,30 +177,49 @@
         </div>
     </div>
 
-    <!-- Modal: Nowe Zadanie (Tylko główne zadanie i deadline) -->
-    <div id="task-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
-        <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-md w-full shadow-xl border border-amber-900/10">
+    <div id="maintask-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
+        <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
             <h3 class="text-lg font-bold text-slate-800 mb-4">Nowe zadanie główne</h3>
-            <form onsubmit="handleCreateTask(event)">
+            <form onsubmit="handleCreateMainTask(event)">
                 <div class="mb-4">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Tytuł zadania</label>
-                    <input type="text" id="task-title" required placeholder="np. Zakup sprzętu wspinaczkowego" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Tytuł zadania głównego</label>
+                    <input type="text" id="maintask-title" required placeholder="np. Zakup sprzętu" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                 </div>
                 <div class="mb-4">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Deadline</label>
-                    <input type="date" id="task-deadline" required class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Deadline (opcjonalnie)</label>
+                    <input type="date" id="maintask-deadline" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                </div>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="button" onclick="closeMainTaskModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
+                    <button type="submit" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-md">Dodaj</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="subtask-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
+        <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-md w-full shadow-xl border border-amber-900/10">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Nowy mniejszy krok</h3>
+            <form onsubmit="handleCreateSubtask(event)">
+                <div class="mb-4">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Treść zadania</label>
+                    <input type="text" id="subtask-title" required placeholder="np. Sprawdzić ceny" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Deadline (opcjonalnie)</label>
+                    <input type="date" id="subtask-deadline" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                 </div>
                 <div class="mb-4">
                     <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Etap początkowy</label>
-                    <select id="task-status" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
-                        <option value="todo">Do podjęcia</option>
+                    <select id="subtask-status" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                        <option value="todo">Pula / Do podjęcia</option>
                         <option value="inprogress">W trakcie</option>
                         <option value="done">Zrobione</option>
                     </select>
                 </div>
                 <div class="flex justify-end gap-2 mt-6">
-                    <button type="button" onclick="closeTaskModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
-                    <button type="submit" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-md">Dodaj zadanie</button>
+                    <button type="button" onclick="closeSubtaskModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
+                    <button type="submit" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-md">Dodaj krok</button>
                 </div>
             </form>
         </div>
@@ -165,24 +227,37 @@
 
     <!-- Skrypt aplikacji -->
     <script>
-        let data = JSON.parse(localStorage.getItem('cozy_tasks_app_data')) || {
+        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v4')) || {
             projects: [],
-            activeProjectId: null
+            activeProjectId: null,
+            activeMainTaskId: null,
+            currentView: 'calendar', // domyślnie otwiera kalendarz
+            weekOffset: 0
         };
 
         function saveData() {
-            localStorage.setItem('cozy_tasks_app_data', JSON.stringify(data));
+            localStorage.setItem('pro_workspace_data_v4', JSON.stringify(data));
             render();
         }
 
         function openProjectModal() { document.getElementById('project-modal').classList.remove('hidden'); }
         function closeProjectModal() { document.getElementById('project-modal').classList.add('hidden'); document.getElementById('project-name').value = ''; }
         
-        function openTaskModal() { document.getElementById('task-modal').classList.remove('hidden'); }
-        function closeTaskModal() { 
-            document.getElementById('task-modal').classList.add('hidden'); 
-            document.getElementById('task-title').value = ''; 
-            document.getElementById('task-deadline').value = ''; 
+        function openMainTaskModal() { document.getElementById('maintask-modal').classList.remove('hidden'); }
+        function closeMainTaskModal() { document.getElementById('maintask-modal').classList.add('hidden'); document.getElementById('maintask-title').value = ''; document.getElementById('maintask-deadline').value = ''; }
+
+        function openSubtaskModal() { document.getElementById('subtask-modal').classList.remove('hidden'); }
+        function closeSubtaskModal() { 
+            document.getElementById('subtask-modal').classList.add('hidden'); 
+            document.getElementById('subtask-title').value = ''; 
+            document.getElementById('subtask-deadline').value = ''; 
+        }
+
+        function openCalendarView() {
+            data.currentView = 'calendar';
+            data.activeProjectId = null;
+            data.activeMainTaskId = null;
+            saveData();
         }
 
         function handleCreateProject(e) {
@@ -191,140 +266,177 @@
             const newProj = {
                 id: 'proj_' + Date.now(),
                 name: name,
-                tasks: []
+                mainTasks: []
             };
             data.projects.push(newProj);
-            if (!data.activeProjectId) data.activeProjectId = newProj.id;
+            setActiveProject(newProj.id);
             closeProjectModal();
-            saveData();
         }
 
         function deleteActiveProject() {
-            if (confirm('Usunąć ten projekt wraz ze wszystkimi zadaniami?')) {
+            if (confirm('Usunąć ten projekt ze wszystkimi zadaniami?')) {
                 data.projects = data.projects.filter(p => p.id !== data.activeProjectId);
-                data.activeProjectId = data.projects.length > 0 ? data.projects[0].id : null;
-                saveData();
+                openCalendarView();
             }
         }
 
-        function handleCreateTask(e) {
+        function handleCreateMainTask(e) {
             e.preventDefault();
-            const title = document.getElementById('task-title').value;
-            const deadline = document.getElementById('task-deadline').value;
-            const status = document.getElementById('task-status').value;
-
+            const title = document.getElementById('maintask-title').value;
+            const deadline = document.getElementById('maintask-deadline').value;
             const proj = data.projects.find(p => p.id === data.activeProjectId);
             if (proj) {
-                proj.tasks.push({
-                    id: 'task_' + Date.now(),
+                proj.mainTasks.push({
+                    id: 'maintask_' + Date.now(),
                     title,
-                    deadline,
-                    status,
-                    subtasks: [],
-                    notes: ''
+                    deadline: deadline || null,
+                    subtasks: []
                 });
             }
-            closeTaskModal();
+            closeMainTaskModal();
             saveData();
         }
 
-        // Dodawanie podzadania do istniejącego taska
-        function addSubtask(taskId, event) {
-            event.preventDefault();
-            const input = document.getElementById('subtask_input_' + taskId);
-            const title = input.value.trim();
-            if (!title) return;
-
-            const proj = data.projects.find(p => p.id === data.activeProjectId);
-            if (proj) {
-                const task = proj.tasks.find(t => t.id === taskId);
-                if (task) {
-                    if (!task.subtasks) task.subtasks = [];
-                    task.subtasks.push({ id: 'sub_' + Date.now(), title, completed: false });
+        function deleteMainTask(mainTaskId, event) {
+            event.stopPropagation();
+            if (confirm('Usunąć to zadanie główne?')) {
+                const proj = data.projects.find(p => p.id === data.activeProjectId);
+                if (proj) {
+                    proj.mainTasks = proj.mainTasks.filter(mt => mt.id !== mainTaskId);
                     saveData();
                 }
             }
         }
 
-        function toggleSubtask(taskId, subtaskId) {
+        function handleCreateSubtask(e) {
+            e.preventDefault();
+            const title = document.getElementById('subtask-title').value;
+            const deadline = document.getElementById('subtask-deadline').value;
+            const status = document.getElementById('subtask-status').value;
+
             const proj = data.projects.find(p => p.id === data.activeProjectId);
             if (proj) {
-                const task = proj.tasks.find(t => t.id === taskId);
-                if (task) {
-                    const sub = task.subtasks.find(s => s.id === subtaskId);
+                const mainTask = proj.mainTasks.find(mt => mt.id === data.activeMainTaskId);
+                if (mainTask) {
+                    if (!mainTask.subtasks) mainTask.subtasks = [];
+                    mainTask.subtasks.push({
+                        id: 'sub_' + Date.now(),
+                        title,
+                        deadline: deadline || null,
+                        status,
+                        notes: ''
+                    });
+                }
+            }
+            closeSubtaskModal();
+            saveData();
+        }
+
+        function moveSubtask(subtaskId, newStatus) {
+            const proj = data.projects.find(p => p.id === data.activeProjectId);
+            if (proj) {
+                const mainTask = proj.mainTasks.find(mt => mt.id === data.activeMainTaskId);
+                if (mainTask) {
+                    const sub = mainTask.subtasks.find(s => s.id === subtaskId);
                     if (sub) {
-                        sub.completed = !sub.completed;
+                        sub.status = newStatus;
                         saveData();
                     }
                 }
             }
         }
 
-        function deleteSubtask(taskId, subtaskId) {
+        function deleteSubtask(subtaskId) {
             const proj = data.projects.find(p => p.id === data.activeProjectId);
             if (proj) {
-                const task = proj.tasks.find(t => t.id === taskId);
-                if (task) {
-                    task.subtasks = task.subtasks.filter(s => s.id !== subtaskId);
+                const mainTask = proj.mainTasks.find(mt => mt.id === data.activeMainTaskId);
+                if (mainTask) {
+                    mainTask.subtasks = mainTask.subtasks.filter(s => s.id !== subtaskId);
                     saveData();
                 }
             }
         }
 
-        // Zapisywanie notatek dla zadania
-        function saveTaskNotes(taskId, notes) {
+        function saveSubtaskNotes(subtaskId, notes) {
             const proj = data.projects.find(p => p.id === data.activeProjectId);
             if (proj) {
-                const task = proj.tasks.find(t => t.id === taskId);
-                if (task) {
-                    task.notes = notes;
-                    // Nie wywołujemy pełnego render(), żeby nie tracić focusu z pola tekstowego notatki przy pisaniu
-                    localStorage.setItem('cozy_tasks_app_data', JSON.stringify(data));
+                const mainTask = proj.mainTasks.find(mt => mt.id === data.activeMainTaskId);
+                if (mainTask) {
+                    const sub = mainTask.subtasks.find(s => s.id === subtaskId);
+                    if (sub) {
+                        sub.notes = notes;
+                        localStorage.setItem('pro_workspace_data_v4', JSON.stringify(data));
+                    }
                 }
-            }
-        }
-
-        function moveTask(taskId, newStatus) {
-            const proj = data.projects.find(p => p.id === data.activeProjectId);
-            if (proj) {
-                const task = proj.tasks.find(t => t.id === taskId);
-                if (task) task.status = newStatus;
-                saveData();
-            }
-        }
-
-        function deleteTask(taskId) {
-            const proj = data.projects.find(p => p.id === data.activeProjectId);
-            if (proj) {
-                proj.tasks = proj.tasks.filter(t => t.id !== taskId);
-                saveData();
             }
         }
 
         function setActiveProject(id) {
             data.activeProjectId = id;
+            data.currentView = 'project';
+            data.activeMainTaskId = null;
             saveData();
+        }
+
+        function openTaskDetail(mainTaskId) {
+            data.activeMainTaskId = mainTaskId;
+            data.currentView = 'task_detail';
+            saveData();
+        }
+
+        function backToProjectView() {
+            data.currentView = 'project';
+            data.activeMainTaskId = null;
+            saveData();
+        }
+
+        function changeWeek(direction) {
+            data.weekOffset += direction;
+            render();
+        }
+
+        function resetWeek() {
+            data.weekOffset = 0;
+            render();
+        }
+
+        // Pomocnicza funkcja do dat
+        function getWeekDates(offset) {
+            const now = new Date();
+            const currentDayOfWeek = now.getDay();
+            const distanceToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
+            
+            const monday = new Date(now);
+            monday.setDate(now.getDate() + distanceToMonday + (offset * 7));
+
+            let week = [];
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(monday);
+                day.setDate(monday.getDate() + i);
+                week.push(day.toISOString().split('T')[0]);
+            }
+            return week;
         }
 
         function render() {
             const projectsListEl = document.getElementById('projects-list');
-            const activeContainerEl = document.getElementById('active-project-container');
-            const emptyStateEl = document.getElementById('empty-state');
+            const calendarViewEl = document.getElementById('calendar-view');
+            const projectViewEl = document.getElementById('project-view');
+            const taskDetailViewEl = document.getElementById('task-detail-view');
+            const sidebarCalendarBtn = document.getElementById('sidebar-calendar-btn');
 
             projectsListEl.innerHTML = '';
 
-            if (data.projects.length === 0) {
-                activeContainerEl.classList.add('hidden');
-                emptyStateEl.classList.remove('hidden');
-                return;
+            // Podświetlenie aktywnego przycisku kalendarza w menu
+            if (data.currentView === 'calendar') {
+                sidebarCalendarBtn.className = 'w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 sidebar-item-active';
+            } else {
+                sidebarCalendarBtn.className = 'w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 text-slate-600 hover:bg-amber-100/40';
             }
 
-            emptyStateEl.classList.add('hidden');
-            activeContainerEl.classList.remove('hidden');
-
-            // Renderowanie menu bocznego projektów
+            // Renderowanie menu projektów
             data.projects.forEach(proj => {
-                const isActive = proj.id === data.activeProjectId;
+                const isActive = proj.id === data.activeProjectId && data.currentView !== 'calendar';
                 const btn = document.createElement('button');
                 btn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-between ${isActive ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
                 btn.innerHTML = `<span>${escapeHtml(proj.name)}</span>`;
@@ -332,10 +444,152 @@
                 projectsListEl.appendChild(btn);
             });
 
-            const activeProj = data.projects.find(p => p.id === data.activeProjectId);
-            if (!activeProj) return;
+            // Ukrywanie wszystkich widoków
+            calendarViewEl.classList.add('hidden');
+            projectViewEl.classList.add('hidden');
+            taskDetailViewEl.classList.add('hidden');
 
-            document.getElementById('active-project-title').innerText = activeProj.name;
+            if (data.currentView === 'calendar') {
+                calendarViewEl.classList.remove('hidden');
+                renderCalendar();
+            } else if (data.currentView === 'project') {
+                projectViewEl.classList.remove('hidden');
+                renderProjectView();
+            } else if (data.currentView === 'task_detail') {
+                taskDetailViewEl.classList.remove('hidden');
+                renderTaskDetailView();
+            }
+        }
+
+        function renderCalendar() {
+            const gridEl = document.getElementById('weekly-grid');
+            gridEl.innerHTML = '';
+
+            const weekDays = getWeekDates(data.weekOffset);
+            const dayNames = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'];
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            // Zbieranie wszystkich zadań z deadline'ami ze wszystkich projektów
+            let allTasksWithDeadline = [];
+            data.projects.forEach(proj => {
+                // Zadania główne z deadline
+                proj.mainTasks.forEach(mt => {
+                    if (mt.deadline) {
+                        allTasksWithDeadline.push({
+                            title: mt.title,
+                            deadline: mt.deadline,
+                            projectName: proj.name,
+                            type: 'main',
+                            status: mt.subtasks && mt.subtasks.length > 0 && mt.subtasks.every(s => s.status === 'done') ? 'done' : 'todo'
+                        });
+                    }
+                    // Mniejsze zadania z deadline
+                    if (mt.subtasks) {
+                        mt.subtasks.forEach(sub => {
+                            if (sub.deadline) {
+                                allTasksWithDeadline.push({
+                                    title: sub.title,
+                                    deadline: sub.deadline,
+                                    projectName: proj.name,
+                                    type: 'sub',
+                                    status: sub.status
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+
+            weekDays.forEach((dateStr, index) => {
+                const isToday = dateStr === todayStr;
+                const dayColumn = document.createElement('div');
+                dayColumn.className = `glass-panel rounded-2xl p-4 flex flex-col gap-3 ${isToday ? 'border-2 border-[#e07a5f] bg-amber-50/50' : ''}`;
+
+                const tasksForDay = allTasksWithDeadline.filter(t => t.deadline === dateStr);
+
+                let tasksHtml = '';
+                if (tasksForDay.length === 0) {
+                    tasksHtml = `<div class="text-xs text-amber-900/40 italic py-4 text-center">Brak zadań</div>`;
+                } else {
+                    tasksHtml = tasksForDay.map(t => `
+                        <div class="bg-white/90 p-2.5 rounded-xl border border-amber-900/10 text-xs shadow-2xs">
+                            <span class="text-[10px] font-bold text-[#e07a5f] block mb-0.5">${escapeHtml(t.projectName)}</span>
+                            <span class="font-medium text-slate-800 ${t.status === 'done' ? 'line-through text-slate-400' : ''}">${escapeHtml(t.title)}</span>
+                        </div>
+                    `).join('');
+                }
+
+                dayColumn.innerHTML = `
+                    <div class="border-b border-amber-950/10 pb-2 flex justify-between items-center">
+                        <span class="font-bold text-sm text-slate-800">${dayNames[index]}</span>
+                        <span class="text-xs ${isToday ? 'bg-[#e07a5f] text-white px-2 py-0.5 rounded-full font-bold' : 'text-amber-900/50'}">${dateStr.slice(5)}</span>
+                    </div>
+                    <div class="space-y-2 flex-1">
+                        ${tasksHtml}
+                    </div>
+                `;
+                gridEl.appendChild(dayColumn);
+            });
+        }
+
+        function renderProjectView() {
+            const activeProj = data.projects.find(p => p.id === data.activeProjectId);
+            if (!activeProj) {
+                openCalendarView();
+                return;
+            }
+
+            document.getElementById('project-view-title').innerText = activeProj.name;
+            const mainTasksListEl = document.getElementById('main-tasks-list');
+            mainTasksListEl.innerHTML = '';
+
+            if (activeProj.mainTasks.length === 0) {
+                mainTasksListEl.innerHTML = `
+                    <div class="glass-panel p-8 text-center rounded-2xl text-amber-900/50 text-sm">
+                        Brak zadań głównych w tym projekcie. Kliknij "+ Dodaj zadanie główne", aby zacząć.
+                    </div>
+                `;
+            } else {
+                activeProj.mainTasks.forEach(mt => {
+                    const subtasks = mt.subtasks || [];
+                    const total = subtasks.length;
+                    const doneCount = subtasks.filter(s => s.status === 'done').length;
+                    const percent = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+
+                    const card = document.createElement('div');
+                    card.className = 'glass-panel p-5 rounded-2xl border border-amber-900/10 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 cursor-pointer hover:shadow-md transition-all';
+                    card.onclick = () => openTaskDetail(mt.id);
+
+                    card.innerHTML = `
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <h3 class="font-bold text-slate-800 text-base">${escapeHtml(mt.title)}</h3>
+                                ${mt.deadline ? `<span class="text-xs text-amber-900/60 bg-amber-50 px-2 py-0.5 rounded-md">📅 ${mt.deadline}</span>` : ''}
+                                <span class="text-xs bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">${doneCount}/${total} ukończone</span>
+                            </div>
+                            <div class="w-full bg-amber-950/10 rounded-full h-2.5 max-w-md overflow-hidden">
+                                <div class="bg-gradient-to-r from-[#e07a5f] to-emerald-500 h-2.5 rounded-full transition-all duration-500" style="width: ${percent}%"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs font-bold text-slate-600 bg-white/70 px-3 py-1.5 rounded-xl border border-amber-900/10 shadow-xs">Wejdź w zadanie →</span>
+                            <button onclick="deleteMainTask('${mt.id}', event)" class="text-slate-300 hover:text-rose-600 p-2 text-sm transition-colors">🗑️</button>
+                        </div>
+                    `;
+                    mainTasksListEl.appendChild(card);
+                });
+            }
+        }
+
+        function renderTaskDetailView() {
+            const activeProj = data.projects.find(p => p.id === data.activeProjectId);
+            const mainTask = activeProj ? activeProj.mainTasks.find(mt => mt.id === data.activeMainTaskId) : null;
+            if (!mainTask) {
+                backToProjectView();
+                return;
+            }
+
+            document.getElementById('detail-task-title').innerText = mainTask.title;
 
             const colTodo = document.getElementById('column-todo');
             const colInProgress = document.getElementById('column-inprogress');
@@ -346,68 +600,42 @@
             colDone.innerHTML = '';
 
             let counts = { todo: 0, inprogress: 0, done: 0 };
+            const subtasks = mainTask.subtasks || [];
 
-            activeProj.tasks.forEach(task => {
-                counts[task.status]++;
+            subtasks.forEach(sub => {
+                counts[sub.status]++;
                 const card = document.createElement('div');
                 card.className = 'glass-panel bg-white/90 p-4 rounded-2xl border border-amber-900/10 shadow-xs relative transition-all hover:shadow-md';
                 
                 const today = new Date().toISOString().split('T')[0];
-                const isOverdue = task.deadline < today && task.status !== 'done';
-
-                // Podzadania
-                let subtasksHtml = '<div class="mt-3 pt-3 border-t border-amber-950/5 space-y-1.5"><div class="text-[11px] font-bold text-amber-900/40 uppercase mb-1">Mniejsze kroki:</div>';
-                if (task.subtasks && task.subtasks.length > 0) {
-                    task.subtasks.forEach(sub => {
-                        subtasksHtml += `
-                            <div class="flex items-center justify-between text-xs text-slate-700 group/sub">
-                                <label class="flex items-center gap-2 cursor-pointer flex-1 py-0.5">
-                                    <input type="checkbox" ${sub.completed ? 'checked' : ''} onchange="toggleSubtask('${task.id}', '${sub.id}')" class="rounded border-amber-300 text-[#e07a5f] focus:ring-0">
-                                    <span class="${sub.completed ? 'line-through text-slate-400' : ''}">${escapeHtml(sub.title)}</span>
-                                </label>
-                                <button onclick="deleteSubtask('${task.id}', '${sub.id}')" class="text-slate-300 hover:text-rose-500 opacity-0 group-hover/sub:opacity-100 transition-opacity px-1">✕</button>
-                            </div>
-                        `;
-                    });
-                }
-                subtasksHtml += `
-                    <form onsubmit="addSubtask('${task.id}', event)" class="flex gap-1 mt-2">
-                        <input type="text" id="subtask_input_${task.id}" placeholder="+ Dodaj krok..." class="flex-1 px-2 py-1 text-xs rounded-lg border border-amber-900/10 focus:outline-none focus:ring-1 focus:ring-[#e07a5f] bg-white/50">
-                    </form>
-                </div>`;
-
-                // Notatki
-                let notesHtml = `
-                    <div class="mt-3 pt-3 border-t border-amber-950/5">
-                        <label class="block text-[11px] font-bold text-amber-900/40 uppercase mb-1">Notatki / aktualizacje:</label>
-                        <textarea oninput="saveTaskNotes('${task.id}', this.value)" placeholder="Wpisz notatkę..." rows="2" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-amber-900/10 focus:outline-none focus:ring-1 focus:ring-[#e07a5f] bg-white/50 text-slate-700 resize-y">${task.notes || ''}</textarea>
-                    </div>
-                `;
+                const isOverdue = sub.deadline && sub.deadline < today && sub.status !== 'done';
 
                 card.innerHTML = `
                     <div class="flex justify-between items-start gap-2 mb-2">
-                        <span class="font-bold text-slate-800 text-sm">${escapeHtml(task.title)}</span>
-                        <button onclick="deleteTask('${task.id}')" class="text-slate-300 hover:text-rose-600 text-xs transition-colors">✕</button>
+                        <span class="font-bold text-slate-800 text-sm">${escapeHtml(sub.title)}</span>
+                        <button onclick="deleteSubtask('${sub.id}')" class="text-slate-300 hover:text-rose-600 text-xs transition-colors">✕</button>
                     </div>
                     
-                    ${subtasksHtml}
-                    ${notesHtml}
+                    <div class="mt-3 pt-3 border-t border-amber-950/5">
+                        <label class="block text-[11px] font-bold text-amber-900/40 uppercase mb-1">Notatki:</label>
+                        <textarea oninput="saveSubtaskNotes('${sub.id}', this.value)" placeholder="Wpisz notatkę..." rows="2" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-amber-900/10 focus:outline-none focus:ring-1 focus:ring-[#e07a5f] bg-white/50 text-slate-700 resize-y">${sub.notes || ''}</textarea>
+                    </div>
 
                     <div class="flex justify-between items-center text-xs mt-4 pt-3 border-t border-amber-950/5">
                         <span class="${isOverdue ? 'text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded' : 'text-amber-900/60 font-medium'}">
-                            📅 ${task.deadline} ${isOverdue ? '⚠️' : ''}
+                            ${sub.deadline ? `📅 ${sub.deadline} ${isOverdue ? '⚠️' : ''}` : '⏳ Brak deadline\'u'}
                         </span>
                         <div class="flex gap-1">
-                            ${task.status !== 'todo' ? `<button onclick="moveTask('${task.id}', 'todo')" title="Do podjęcia" class="px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[10px] font-semibold text-amber-800">⬅️</button>` : ''}
-                            ${task.status !== 'inprogress' ? `<button onclick="moveTask('${task.id}', 'inprogress')" title="W trakcie" class="px-2 py-1 rounded bg-orange-50 hover:bg-orange-100 text-[10px] font-semibold text-orange-800">⚡</button>` : ''}
-                            ${task.status !== 'done' ? `<button onclick="moveTask('${task.id}', 'done')" title="Zrobione" class="px-2 py-1 rounded bg-emerald-50 hover:bg-emerald-100 text-[10px] font-semibold text-emerald-800">✅</button>` : ''}
+                            ${sub.status !== 'todo' ? `<button onclick="moveSubtask('${sub.id}', 'todo')" title="Pula / Do podjęcia" class="px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[10px] font-semibold text-amber-800">⬅️</button>` : ''}
+                            ${sub.status !== 'inprogress' ? `<button onclick="moveSubtask('${sub.id}', 'inprogress')" title="W trakcie" class="px-2 py-1 rounded bg-orange-50 hover:bg-orange-100 text-[10px] font-semibold text-orange-800">⚡</button>` : ''}
+                            ${sub.status !== 'done' ? `<button onclick="moveSubtask('${sub.id}', 'done')" title="Zrobione" class="px-2 py-1 rounded bg-emerald-50 hover:bg-emerald-100 text-[10px] font-semibold text-emerald-800">✅</button>` : ''}
                         </div>
                     </div>
                 `;
 
-                if (task.status === 'todo') colTodo.appendChild(card);
-                else if (task.status === 'inprogress') colInProgress.appendChild(card);
-                else if (task.status === 'done') colDone.appendChild(card);
+                if (sub.status === 'todo') colTodo.appendChild(card);
+                else if (sub.status === 'inprogress') colInProgress.appendChild(card);
+                else if (sub.status === 'done') colDone.appendChild(card);
             });
 
             document.getElementById('count-todo').innerText = counts.todo;
