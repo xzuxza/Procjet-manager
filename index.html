@@ -25,7 +25,6 @@
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(224, 122, 95, 0.25);
         }
-        /* Płótno Vision Board */
         #vision-canvas {
             position: relative;
             width: 100%;
@@ -161,7 +160,7 @@
                     <div class="flex items-center gap-2">
                         <h2 id="detail-task-title" class="text-2xl font-bold text-slate-800"></h2>
                         <button onclick="editMainTaskName()" class="text-slate-400 hover:text-[#e07a5f] text-xs p-1" title="Edytuj nazwę">✏️</button>
-                        <button onclick="editMainTaskDeadline()" class="text-slate-400 hover:text-[#e07a5f] text-xs p-1 ml-2 bg-amber-50 px-2 py-1 rounded-lg border border-amber-900/10" title="Edytuj deadline">📅 Zmień termin</button>
+                        <button onclick="openDeadlineModalForMainTask()" class="text-slate-400 hover:text-[#e07a5f] text-xs p-1 ml-2 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-900/10 font-semibold" title="Edytuj deadline">📅 Zmień termin</button>
                     </div>
                     <p id="detail-task-deadline-info" class="text-sm text-amber-900/60 mt-1"></p>
                 </div>
@@ -225,6 +224,26 @@
         </div>
     </div>
 
+    <!-- Modal: Wybór daty deadline (uniwersalny do zadań głównych i mniejszych) -->
+    <div id="deadline-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
+        <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
+            <h3 id="deadline-modal-title" class="text-lg font-bold text-slate-800 mb-4">Ustaw deadline</h3>
+            <form onsubmit="handleSaveDeadline(event)">
+                <div class="mb-4">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Wybierz datę</label>
+                    <input type="date" id="modal-deadline-input" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                </div>
+                <div class="flex justify-between items-center mt-6">
+                    <button type="button" onclick="clearDeadlineFromModal()" class="text-xs text-rose-600 hover:underline font-semibold">Usuń termin</button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="closeDeadlineModal()" class="px-3 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
+                        <button type="submit" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white text-sm font-semibold px-4 py-2 rounded-xl shadow-md">Zapisz</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="visionboard-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
         <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
             <h3 class="text-lg font-bold text-slate-800 mb-4">Nowa Tablica Marzeń</h3>
@@ -262,7 +281,6 @@
         </div>
     </div>
 
-    <!-- Modal: Zadanie główne z opcjonalnym deadline'em -->
     <div id="maintask-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
         <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
             <h3 class="text-lg font-bold text-slate-800 mb-4">Nowe zadanie główne</h3>
@@ -293,16 +311,7 @@
                 </div>
                 <div class="mb-4">
                     <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Deadline (opcjonalnie)</label>
-                    <input type="date" id="subtask-deadline" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60" oninput="checkDeadlineStatus(this.value)">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Status początkowy</label>
-                    <select id="subtask-status" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
-                        <option value="pool">📁 Pula (ogólna)</option>
-                        <option value="todo">🎯 Do podjęcia</option>
-                        <option value="inprogress">⚡ W trakcie</option>
-                        <option value="done">✨ Zrobione</option>
-                    </select>
+                    <input type="date" id="subtask-deadline" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                 </div>
                 <div class="flex justify-end gap-2 mt-6">
                     <button type="button" onclick="closeSubtaskModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
@@ -314,7 +323,7 @@
 
     <!-- Skrypt aplikacji -->
     <script>
-        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v9')) || {
+        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v10')) || {
             projects: [],
             visionBoards: [],
             activeProjectId: null,
@@ -323,8 +332,11 @@
             currentView: 'upcoming'
         };
 
+        // Stan modalu kalendarza
+        let deadlineTarget = { type: null, id: null };
+
         function saveData() {
-            localStorage.setItem('pro_workspace_data_v9', JSON.stringify(data));
+            localStorage.setItem('pro_workspace_data_v10', JSON.stringify(data));
             render();
         }
 
@@ -345,6 +357,68 @@
             document.getElementById('subtask-modal').classList.add('hidden'); 
             document.getElementById('subtask-title').value = ''; 
             document.getElementById('subtask-deadline').value = ''; 
+        }
+
+        // Obsługa modalu kalendarza
+        function openDeadlineModal(type, id, currentDate) {
+            deadlineTarget = { type, id };
+            document.getElementById('modal-deadline-input').value = currentDate || '';
+            document.getElementById('deadline-modal').classList.remove('hidden');
+        }
+
+        function closeDeadlineModal() {
+            document.getElementById('deadline-modal').classList.add('hidden');
+            deadlineTarget = { type: null, id: null };
+        }
+
+        function handleSaveDeadline(e) {
+            e.preventDefault();
+            const newDate = document.getElementById('modal-deadline-input').value;
+            applyDeadlineChange(newDate || null);
+            closeDeadlineModal();
+        }
+
+        function clearDeadlineFromModal() {
+            applyDeadlineChange(null);
+            closeDeadlineModal();
+        }
+
+        function applyDeadlineChange(newDate) {
+            const proj = data.projects.find(p => p.id === data.activeProjectId);
+            if (!proj) return;
+
+            if (deadlineTarget.type === 'maintask') {
+                const mt = proj.mainTasks.find(m => m.id === deadlineTarget.id);
+                if (mt) {
+                    mt.deadline = newDate;
+                    saveData();
+                }
+            } else if (deadlineTarget.type === 'subtask') {
+                const mt = proj.mainTasks.find(m => m.id === data.activeMainTaskId);
+                if (mt) {
+                    const sub = mt.subtasks.find(s => s.id === deadlineTarget.id);
+                    if (sub) {
+                        sub.deadline = newDate;
+                        // Jeśli usunięto deadline, a zadanie było w "Do podjęcia", wraca do Puli
+                        if (!newDate && sub.status === 'todo') {
+                            sub.status = 'pool';
+                        }
+                        // Jeśli dodano deadline, a zadanie było w Puli, automatycznie wskakuje do "Do podjęcia"
+                        if (newDate && sub.status === 'pool') {
+                            sub.status = 'todo';
+                        }
+                        saveData();
+                    }
+                }
+            }
+        }
+
+        function openDeadlineModalForMainTask() {
+            const proj = data.projects.find(p => p.id === data.activeProjectId);
+            if (!proj) return;
+            const mt = proj.mainTasks.find(m => m.id === data.activeMainTaskId);
+            if (!mt) return;
+            openDeadlineModal('maintask', mt.id, mt.deadline);
         }
 
         function openUpcomingView() {
@@ -429,7 +503,7 @@
                 const item = board.items.find(i => i.id === itemId);
                 if (item) {
                     item.width = parseInt(newWidth);
-                    localStorage.setItem('pro_workspace_data_v9', JSON.stringify(data));
+                    localStorage.setItem('pro_workspace_data_v10', JSON.stringify(data));
                     const el = document.getElementById(itemId);
                     if (el) el.style.width = item.width + 'px';
                 }
@@ -491,18 +565,6 @@
             }
         }
 
-        function editMainTaskDeadline() {
-            const proj = data.projects.find(p => p.id === data.activeProjectId);
-            if (!proj) return;
-            const mt = proj.mainTasks.find(m => m.id === data.activeMainTaskId);
-            if (!mt) return;
-            const newDate = prompt('Wpisz nowy deadline (YYYY-MM-DD) lub zostaw puste, aby usunąć:', mt.deadline || '');
-            if (newDate !== null) {
-                mt.deadline = newDate.trim() !== '' ? newDate.trim() : null;
-                saveData();
-            }
-        }
-
         function editSubtaskName(subtaskId) {
             const proj = data.projects.find(p => p.id === data.activeProjectId);
             if (!proj) return;
@@ -513,20 +575,6 @@
             const newName = prompt('Edytuj nazwę mniejszego kroku:', sub.title);
             if (newName !== null && newName.trim() !== '') {
                 sub.title = newName.trim();
-                saveData();
-            }
-        }
-
-        function editSubtaskDeadline(subtaskId) {
-            const proj = data.projects.find(p => p.id === data.activeProjectId);
-            if (!proj) return;
-            const mt = proj.mainTasks.find(m => m.id === data.activeMainTaskId);
-            if (!mt) return;
-            const sub = mt.subtasks.find(s => s.id === subtaskId);
-            if (!sub) return;
-            const newDate = prompt('Edytuj deadline (YYYY-MM-DD) lub zostaw puste, aby usunąć:', sub.deadline || '');
-            if (newDate !== null) {
-                sub.deadline = newDate.trim() !== '' ? newDate.trim() : null;
                 saveData();
             }
         }
@@ -566,24 +614,13 @@
             }
         }
 
-        function checkDeadlineStatus(dateVal) {
-            const statusSelect = document.getElementById('subtask-status');
-            if (dateVal && statusSelect.value === 'pool') {
-                statusSelect.value = 'todo';
-            } else if (!dateVal && statusSelect.value === 'todo') {
-                statusSelect.value = 'pool';
-            }
-        }
-
         function handleCreateSubtask(e) {
             e.preventDefault();
             const title = document.getElementById('subtask-title').value;
             const deadline = document.getElementById('subtask-deadline').value;
-            let status = document.getElementById('subtask-status').value;
 
-            if (deadline && status === 'pool') {
-                status = 'todo';
-            }
+            // Zasada: brak deadline'u -> zawsze Pula ('pool'). Jest deadline -> automatycznie 'todo' (Do podjęcia).
+            let status = deadline ? 'todo' : 'pool';
 
             const proj = data.projects.find(p => p.id === data.activeProjectId);
             if (proj) {
@@ -610,6 +647,11 @@
                 if (mainTask) {
                     const sub = mainTask.subtasks.find(s => s.id === subtaskId);
                     if (sub) {
+                        // Zabezpieczenie: jeśli użytkownik próbuje przenieść do "Do podjęcia", a nie ma deadline'u, blokujemy lub informujemy
+                        if (newStatus === 'todo' && !sub.deadline) {
+                            alert('Aby przenieść zadanie do "Do podjęcia", najpierw dodaj mu deadline!');
+                            return;
+                        }
                         sub.status = newStatus;
                         saveData();
                     }
@@ -636,7 +678,7 @@
                     const sub = mainTask.subtasks.find(s => s.id === subtaskId);
                     if (sub) {
                         sub.notes = notes;
-                        localStorage.setItem('pro_workspace_data_v9', JSON.stringify(data));
+                        localStorage.setItem('pro_workspace_data_v10', JSON.stringify(data));
                     }
                 }
             }
@@ -718,7 +760,6 @@
             if (data.projects) {
                 data.projects.forEach(proj => {
                     proj.mainTasks.forEach(mt => {
-                        // Zadania główne z deadline
                         if (mt.deadline) {
                             allTasks.push({
                                 title: mt.title,
@@ -727,7 +768,6 @@
                                 type: 'main'
                             });
                         }
-                        // Mniejsze zadania z deadline
                         if (mt.subtasks) {
                             mt.subtasks.forEach(sub => {
                                 if (sub.deadline && sub.status !== 'done') {
@@ -848,7 +888,7 @@
                     isDragging = false;
                     itemDiv.releasePointerCapture(e.pointerId);
                     itemDiv.style.zIndex = 1;
-                    localStorage.setItem('pro_workspace_data_v9', JSON.stringify(data));
+                    localStorage.setItem('pro_workspace_data_v10', JSON.stringify(data));
                 });
 
                 canvasEl.appendChild(itemDiv);
@@ -956,7 +996,7 @@
                             <span class="${isOverdue ? 'text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded' : 'text-amber-900/60 font-medium'}">
                                 ${sub.deadline ? `📅 ${sub.deadline} ${isOverdue ? '⚠️' : ''}` : '⏳ Brak'}
                             </span>
-                            <button onclick="editSubtaskDeadline('${sub.id}')" class="text-slate-400 hover:text-[#e07a5f] text-[10px] bg-amber-50 px-1.5 py-0.5 rounded border border-amber-900/10" title="Edytuj deadline">📅 zmień</button>
+                            <button onclick="openDeadlineModal('subtask', '${sub.id}', '${sub.deadline || ''}')" class="text-slate-400 hover:text-[#e07a5f] text-[10px] bg-amber-50 px-1.5 py-0.5 rounded border border-amber-900/10" title="Edytuj deadline">📅 zmień</button>
                         </div>
                         <div class="flex gap-1">
                             ${sub.status !== 'pool' ? `<button onclick="moveSubtask('${sub.id}', 'pool')" title="Pula" class="px-1.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[10px] font-semibold text-slate-700">📁</button>` : ''}
