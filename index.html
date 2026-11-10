@@ -45,7 +45,6 @@
         .vision-item:active {
             cursor: grabbing;
         }
-        /* Styl narożnego uchwytu zmiany rozmiaru */
         .resize-handle {
             position: absolute;
             bottom: 4px;
@@ -135,7 +134,7 @@
                         <h2 id="vision-board-title" class="text-2xl font-bold text-slate-800"></h2>
                         <button onclick="editVisionBoardName()" class="text-slate-400 hover:text-[#e07a5f] text-xs p-1" title="Edytuj nazwę tablicy">✏️</button>
                     </div>
-                    <p class="text-sm text-amber-900/60 mt-1">Przeciągaj obrazki, zmieniaj ich rozmiar i układaj kolaż marzeń</p>
+                    <p id="vision-board-subtitle" class="text-sm text-amber-900/60 mt-1"></p>
                 </div>
                 <div class="flex items-center gap-2">
                     <button onclick="deleteActiveVisionBoard()" class="text-xs text-amber-900/40 hover:text-rose-600 transition-colors bg-white/50 px-3 py-2 rounded-xl border border-amber-950/5">🗑️ Usuń tablicę</button>
@@ -264,6 +263,7 @@
         </div>
     </div>
 
+    <!-- Modal: Nowa Tablica Marzeń z możliwością powiązania z projektem -->
     <div id="visionboard-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
         <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
             <h3 class="text-lg font-bold text-slate-800 mb-4">Nowa Tablica Marzeń</h3>
@@ -271,6 +271,12 @@
                 <div class="mb-4">
                     <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Nazwa tablicy</label>
                     <input type="text" id="visionboard-name" required autocomplete="off" placeholder="np. Cele Roczne ✨" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Powiąż z projektem (opcjonalnie)</label>
+                    <select id="visionboard-project-select" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60 text-slate-700">
+                        <option value="">✨ Tablica niezależna (ogólna)</option>
+                    </select>
                 </div>
                 <div class="flex justify-end gap-2 mt-6">
                     <button type="button" onclick="closeVisionBoardModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
@@ -343,7 +349,7 @@
 
     <!-- Skrypt aplikacji -->
     <script>
-        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v12')) || {
+        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v13')) || {
             projects: [],
             visionBoards: [],
             activeProjectId: null,
@@ -355,14 +361,28 @@
         let deadlineTarget = { type: null, id: null };
 
         function saveData() {
-            localStorage.setItem('pro_workspace_data_v12', JSON.stringify(data));
+            localStorage.setItem('pro_workspace_data_v13', JSON.stringify(data));
             render();
         }
 
         function openProjectModal() { document.getElementById('project-modal').classList.remove('hidden'); }
         function closeProjectModal() { document.getElementById('project-modal').classList.add('hidden'); document.getElementById('project-name').value = ''; }
 
-        function openVisionBoardModal() { document.getElementById('visionboard-modal').classList.remove('hidden'); }
+        function openVisionBoardModal() {
+            // Wypełnij listę projektów w select
+            const selectEl = document.getElementById('visionboard-project-select');
+            selectEl.innerHTML = '<option value="">✨ Tablica niezależna (ogólna)</option>';
+            if (data.projects) {
+                data.projects.forEach(proj => {
+                    const opt = document.createElement('option');
+                    opt.value = proj.id;
+                    opt.innerText = `Projekt: ${proj.name}`;
+                    selectEl.appendChild(opt);
+                });
+            }
+            document.getElementById('visionboard-modal').classList.remove('hidden');
+        }
+
         function closeVisionBoardModal() { document.getElementById('visionboard-modal').classList.add('hidden'); document.getElementById('visionboard-name').value = ''; }
 
         function openAddImageModal() { document.getElementById('addimage-modal').classList.remove('hidden'); }
@@ -461,9 +481,12 @@
         function handleCreateVisionBoard(e) {
             e.preventDefault();
             const name = document.getElementById('visionboard-name').value;
+            const linkedProjectId = document.getElementById('visionboard-project-select').value;
+            
             const newBoard = {
                 id: 'board_' + Date.now(),
                 name: name,
+                projectId: linkedProjectId || null,
                 items: []
             };
             if (!data.visionBoards) data.visionBoards = [];
@@ -678,7 +701,7 @@
                     const sub = mainTask.subtasks.find(s => s.id === subtaskId);
                     if (sub) {
                         sub.notes = notes;
-                        localStorage.setItem('pro_workspace_data_v12', JSON.stringify(data));
+                        localStorage.setItem('pro_workspace_data_v13', JSON.stringify(data));
                     }
                 }
             }
@@ -822,7 +845,6 @@
             });
         }
 
-        // Renderowanie płótna Vision Board z czystym kafelkiem i narożnym uchwytem zmiany rozmiaru
         function renderVisionCanvas() {
             const board = data.visionBoards.find(b => b.id === data.activeVisionBoardId);
             if (!board) {
@@ -831,6 +853,15 @@
             }
 
             document.getElementById('vision-board-title').innerText = board.name;
+            const subtitleEl = document.getElementById('vision-board-subtitle');
+            
+            if (board.projectId) {
+                const linkedProj = data.projects.find(p => p.id === board.projectId);
+                subtitleEl.innerText = linkedProj ? `Powiązane z projektem: ${linkedProj.name}` : 'Powiązane z projektem';
+            } else {
+                subtitleEl.innerText = 'Niezależna tablica marzeń';
+            }
+
             const canvasEl = document.getElementById('vision-canvas');
             canvasEl.innerHTML = '';
 
@@ -861,12 +892,10 @@
                     <div class="resize-handle" title="Przeciągnij, aby zmienić rozmiar">◢</div>
                 `;
 
-                // Przesuwanie obrazka (całe okienko)
                 let isDragging = false;
                 let startX, startY;
 
                 itemDiv.addEventListener('pointerdown', (e) => {
-                    // Jeśli kliknięto w uchwyt zmiany rozmiaru lub przycisk usuwania, nie uruchamiaj przesuwania
                     if (e.target.classList.contains('resize-handle') || e.target.tagName === 'BUTTON') return;
                     isDragging = true;
                     startX = e.clientX - item.x;
@@ -888,10 +917,9 @@
                     isDragging = false;
                     itemDiv.releasePointerCapture(e.pointerId);
                     itemDiv.style.zIndex = 1;
-                    localStorage.setItem('pro_workspace_data_v12', JSON.stringify(data));
+                    localStorage.setItem('pro_workspace_data_v13', JSON.stringify(data));
                 });
 
-                // Zmiana rozmiaru za pomocą narożnego uchwytu
                 const handleEl = itemDiv.querySelector('.resize-handle');
                 let isResizing = false;
                 let startWidth, startMouseX;
@@ -909,8 +937,8 @@
                     if (!isResizing) return;
                     const dx = e.clientX - startMouseX;
                     let newWidth = startWidth + dx;
-                    if (newWidth < 100) newWidth = 100; // Minimalna szerokość
-                    if (newWidth > 600) newWidth = 600; // Maksymalna szerokość
+                    if (newWidth < 100) newWidth = 100;
+                    if (newWidth > 600) newWidth = 600;
                     item.width = newWidth;
                     itemDiv.style.width = newWidth + 'px';
                 });
@@ -920,7 +948,7 @@
                     isResizing = false;
                     handleEl.releasePointerCapture(e.pointerId);
                     itemDiv.style.zIndex = 1;
-                    localStorage.setItem('pro_workspace_data_v12', JSON.stringify(data));
+                    localStorage.setItem('pro_workspace_data_v13', JSON.stringify(data));
                 });
 
                 canvasEl.appendChild(itemDiv);
