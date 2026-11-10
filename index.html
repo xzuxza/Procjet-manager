@@ -207,14 +207,14 @@
 
     </main>
 
-    <!-- Modale -->
+    <!-- Modale (z dodanym autocomplete="off") -->
     <div id="project-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
         <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
             <h3 class="text-lg font-bold text-slate-800 mb-4">Nowy projekt (cel)</h3>
             <form onsubmit="handleCreateProject(event)">
                 <div class="mb-4">
                     <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Nazwa projektu</label>
-                    <input type="text" id="project-name" required placeholder="np. Via Ferraty 🧗‍♀️" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                    <input type="text" id="project-name" required autocomplete="off" placeholder="np. Via Ferraty 🧗‍♀️" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                 </div>
                 <div class="flex justify-end gap-2 mt-6">
                     <button type="button" onclick="closeProjectModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
@@ -224,7 +224,6 @@
         </div>
     </div>
 
-    <!-- Modal: Wybór daty deadline (uniwersalny do zadań głównych i mniejszych) -->
     <div id="deadline-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
         <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
             <h3 id="deadline-modal-title" class="text-lg font-bold text-slate-800 mb-4">Ustaw deadline</h3>
@@ -250,7 +249,7 @@
             <form onsubmit="handleCreateVisionBoard(event)">
                 <div class="mb-4">
                     <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Nazwa tablicy</label>
-                    <input type="text" id="visionboard-name" required placeholder="np. Cele Roczne ✨" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                    <input type="text" id="visionboard-name" required autocomplete="off" placeholder="np. Cele Roczne ✨" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                 </div>
                 <div class="flex justify-end gap-2 mt-6">
                     <button type="button" onclick="closeVisionBoardModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
@@ -271,7 +270,7 @@
                 <div class="text-center text-xs text-amber-900/40 my-2">— lub —</div>
                 <div class="mb-4">
                     <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Wklej link do obrazka (URL)</label>
-                    <input type="url" id="image-url" placeholder="https://..." class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                    <input type="url" id="image-url" autocomplete="off" placeholder="https://..." class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                 </div>
                 <div class="flex justify-end gap-2 mt-6">
                     <button type="button" onclick="closeAddImageModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
@@ -287,7 +286,7 @@
             <form onsubmit="handleCreateMainTask(event)">
                 <div class="mb-4">
                     <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Tytuł zadania głównego</label>
-                    <input type="text" id="maintask-title" required placeholder="np. Zakup sprzętu" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                    <input type="text" id="maintask-title" required autocomplete="off" placeholder="np. Zakup sprzętu" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                 </div>
                 <div class="mb-4">
                     <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Deadline (opcjonalnie)</label>
@@ -307,7 +306,7 @@
             <form onsubmit="handleCreateSubtask(event)">
                 <div class="mb-4">
                     <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Treść zadania</label>
-                    <input type="text" id="subtask-title" required placeholder="np. Sprawdzić ceny" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                    <input type="text" id="subtask-title" required autocomplete="off" placeholder="np. Sprawdzić ceny" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                 </div>
                 <div class="mb-4">
                     <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Deadline (opcjonalnie)</label>
@@ -323,7 +322,7 @@
 
     <!-- Skrypt aplikacji -->
     <script>
-        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v10')) || {
+        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v11')) || {
             projects: [],
             visionBoards: [],
             activeProjectId: null,
@@ -332,11 +331,10 @@
             currentView: 'upcoming'
         };
 
-        // Stan modalu kalendarza
         let deadlineTarget = { type: null, id: null };
 
         function saveData() {
-            localStorage.setItem('pro_workspace_data_v10', JSON.stringify(data));
+            localStorage.setItem('pro_workspace_data_v11', JSON.stringify(data));
             render();
         }
 
@@ -359,7 +357,6 @@
             document.getElementById('subtask-deadline').value = ''; 
         }
 
-        // Obsługa modalu kalendarza
         function openDeadlineModal(type, id, currentDate) {
             deadlineTarget = { type, id };
             document.getElementById('modal-deadline-input').value = currentDate || '';
@@ -399,11 +396,9 @@
                     const sub = mt.subtasks.find(s => s.id === deadlineTarget.id);
                     if (sub) {
                         sub.deadline = newDate;
-                        // Jeśli usunięto deadline, a zadanie było w "Do podjęcia", wraca do Puli
                         if (!newDate && sub.status === 'todo') {
                             sub.status = 'pool';
                         }
-                        // Jeśli dodano deadline, a zadanie było w Puli, automatycznie wskakuje do "Do podjęcia"
                         if (newDate && sub.status === 'pool') {
                             sub.status = 'todo';
                         }
@@ -503,7 +498,7 @@
                 const item = board.items.find(i => i.id === itemId);
                 if (item) {
                     item.width = parseInt(newWidth);
-                    localStorage.setItem('pro_workspace_data_v10', JSON.stringify(data));
+                    localStorage.setItem('pro_workspace_data_v11', JSON.stringify(data));
                     const el = document.getElementById(itemId);
                     if (el) el.style.width = item.width + 'px';
                 }
@@ -618,8 +613,6 @@
             e.preventDefault();
             const title = document.getElementById('subtask-title').value;
             const deadline = document.getElementById('subtask-deadline').value;
-
-            // Zasada: brak deadline'u -> zawsze Pula ('pool'). Jest deadline -> automatycznie 'todo' (Do podjęcia).
             let status = deadline ? 'todo' : 'pool';
 
             const proj = data.projects.find(p => p.id === data.activeProjectId);
@@ -647,7 +640,6 @@
                 if (mainTask) {
                     const sub = mainTask.subtasks.find(s => s.id === subtaskId);
                     if (sub) {
-                        // Zabezpieczenie: jeśli użytkownik próbuje przenieść do "Do podjęcia", a nie ma deadline'u, blokujemy lub informujemy
                         if (newStatus === 'todo' && !sub.deadline) {
                             alert('Aby przenieść zadanie do "Do podjęcia", najpierw dodaj mu deadline!');
                             return;
@@ -678,7 +670,7 @@
                     const sub = mainTask.subtasks.find(s => s.id === subtaskId);
                     if (sub) {
                         sub.notes = notes;
-                        localStorage.setItem('pro_workspace_data_v10', JSON.stringify(data));
+                        localStorage.setItem('pro_workspace_data_v11', JSON.stringify(data));
                     }
                 }
             }
@@ -888,7 +880,7 @@
                     isDragging = false;
                     itemDiv.releasePointerCapture(e.pointerId);
                     itemDiv.style.zIndex = 1;
-                    localStorage.setItem('pro_workspace_data_v10', JSON.stringify(data));
+                    localStorage.setItem('pro_workspace_data_v11', JSON.stringify(data));
                 });
 
                 canvasEl.appendChild(itemDiv);
