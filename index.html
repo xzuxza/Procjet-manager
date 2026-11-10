@@ -136,7 +136,8 @@
                     </div>
                     <p id="vision-board-subtitle" class="text-sm text-amber-900/60 mt-1"></p>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <div id="vision-board-actions-container"></div>
                     <button onclick="deleteActiveVisionBoard()" class="text-xs text-amber-900/40 hover:text-rose-600 transition-colors bg-white/50 px-3 py-2 rounded-xl border border-amber-950/5">🗑️ Usuń tablicę</button>
                     <button onclick="openAddImageModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
                         + Dodaj inspirację (zdjęcie/plik)
@@ -156,7 +157,8 @@
                     </div>
                     <p class="text-sm text-amber-900/60 mt-1">Zadania główne projektu i ich stopień ukończenia</p>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <div id="project-vision-link-container"></div>
                     <button onclick="deleteActiveProject()" class="text-xs text-amber-900/40 hover:text-rose-600 transition-colors bg-white/50 px-3 py-2 rounded-xl border border-amber-950/5">🗑️ Usuń projekt</button>
                     <button onclick="openMainTaskModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
                         + Dodaj zadanie główne
@@ -263,20 +265,20 @@
         </div>
     </div>
 
-    <!-- Modal: Nowa Tablica Marzeń z możliwością powiązania z projektem -->
+    <!-- Modal: Nowa Tablica Marzeń z automatyczną nazwą projektu -->
     <div id="visionboard-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
         <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
             <h3 class="text-lg font-bold text-slate-800 mb-4">Nowa Tablica Marzeń</h3>
             <form onsubmit="handleCreateVisionBoard(event)">
                 <div class="mb-4">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Nazwa tablicy</label>
-                    <input type="text" id="visionboard-name" required autocomplete="off" placeholder="np. Cele Roczne ✨" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
-                </div>
-                <div class="mb-4">
                     <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Powiąż z projektem (opcjonalnie)</label>
-                    <select id="visionboard-project-select" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60 text-slate-700">
+                    <select id="visionboard-project-select" onchange="onVisionBoardProjectSelectChange(this)" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60 text-slate-700">
                         <option value="">✨ Tablica niezależna (ogólna)</option>
                     </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Nazwa tablicy</label>
+                    <input type="text" id="visionboard-name" required autocomplete="off" placeholder="np. Cele Roczne ✨" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                 </div>
                 <div class="flex justify-end gap-2 mt-6">
                     <button type="button" onclick="closeVisionBoardModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
@@ -349,7 +351,7 @@
 
     <!-- Skrypt aplikacji -->
     <script>
-        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v13')) || {
+        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v14')) || {
             projects: [],
             visionBoards: [],
             activeProjectId: null,
@@ -361,7 +363,7 @@
         let deadlineTarget = { type: null, id: null };
 
         function saveData() {
-            localStorage.setItem('pro_workspace_data_v13', JSON.stringify(data));
+            localStorage.setItem('pro_workspace_data_v14', JSON.stringify(data));
             render();
         }
 
@@ -369,21 +371,34 @@
         function closeProjectModal() { document.getElementById('project-modal').classList.add('hidden'); document.getElementById('project-name').value = ''; }
 
         function openVisionBoardModal() {
-            // Wypełnij listę projektów w select
             const selectEl = document.getElementById('visionboard-project-select');
             selectEl.innerHTML = '<option value="">✨ Tablica niezależna (ogólna)</option>';
             if (data.projects) {
                 data.projects.forEach(proj => {
                     const opt = document.createElement('option');
                     opt.value = proj.id;
-                    opt.innerText = `Projekt: ${proj.name}`;
+                    opt.innerText = proj.name;
                     selectEl.appendChild(opt);
                 });
             }
+            document.getElementById('visionboard-name').value = '';
             document.getElementById('visionboard-modal').classList.remove('hidden');
         }
 
-        function closeVisionBoardModal() { document.getElementById('visionboard-modal').classList.add('hidden'); document.getElementById('visionboard-name').value = ''; }
+        function onVisionBoardProjectSelectChange(selectEl) {
+            const nameInput = document.getElementById('visionboard-name');
+            const selectedProjId = selectEl.value;
+            if (selectedProjId) {
+                const proj = data.projects.find(p => p.id === selectedProjId);
+                if (proj) {
+                    nameInput.value = proj.name;
+                }
+            } else {
+                nameInput.value = '';
+            }
+        }
+
+        function closeVisionBoardModal() { document.getElementById('visionboard-modal').classList.add('hidden'); }
 
         function openAddImageModal() { document.getElementById('addimage-modal').classList.remove('hidden'); }
         function closeAddImageModal() { document.getElementById('addimage-modal').classList.add('hidden'); document.getElementById('image-url').value = ''; document.getElementById('image-file').value = ''; }
@@ -476,6 +491,23 @@
             data.projects.push(newProj);
             setActiveProject(newProj.id);
             closeProjectModal();
+        }
+
+        // Funkcja tworzenia projektu bezpośrednio z niezależnej tablicy marzeń
+        function createProjectFromVisionBoard(boardId) {
+            const board = data.visionBoards.find(b => b.id === boardId);
+            if (!board) return;
+
+            const newProj = {
+                id: 'proj_' + Date.now(),
+                name: board.name,
+                mainTasks: []
+            };
+            data.projects.push(newProj);
+            
+            // Powiąż tablicę z nowo utworzonym projektem
+            board.projectId = newProj.id;
+            setActiveProject(newProj.id);
         }
 
         function handleCreateVisionBoard(e) {
@@ -701,7 +733,7 @@
                     const sub = mainTask.subtasks.find(s => s.id === subtaskId);
                     if (sub) {
                         sub.notes = notes;
-                        localStorage.setItem('pro_workspace_data_v13', JSON.stringify(data));
+                        localStorage.setItem('pro_workspace_data_v14', JSON.stringify(data));
                     }
                 }
             }
@@ -854,12 +886,28 @@
 
             document.getElementById('vision-board-title').innerText = board.name;
             const subtitleEl = document.getElementById('vision-board-subtitle');
+            const actionsContainer = document.getElementById('vision-board-actions-container');
+            actionsContainer.innerHTML = '';
             
             if (board.projectId) {
                 const linkedProj = data.projects.find(p => p.id === board.projectId);
                 subtitleEl.innerText = linkedProj ? `Powiązane z projektem: ${linkedProj.name}` : 'Powiązane z projektem';
+                
+                if (linkedProj) {
+                    const btnGoProj = document.createElement('button');
+                    btnGoProj.className = 'text-xs bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold px-3 py-2 rounded-xl transition-all border border-amber-900/10 shadow-2xs';
+                    btnGoProj.innerHTML = `📁 Przejdź do projektu (${escapeHtml(linkedProj.name)})`;
+                    btnGoProj.onclick = () => setActiveProject(linkedProj.id);
+                    actionsContainer.appendChild(btnGoProj);
+                }
             } else {
                 subtitleEl.innerText = 'Niezależna tablica marzeń';
+                
+                const btnCreateProj = document.createElement('button');
+                btnCreateProj.className = 'text-xs bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold px-3.5 py-2 rounded-xl transition-all shadow-md shadow-amber-900/10 hover:opacity-95';
+                btnCreateProj.innerHTML = '✨ Utwórz projekt z tej tablicy';
+                btnCreateProj.onclick = () => createProjectFromVisionBoard(board.id);
+                actionsContainer.appendChild(btnCreateProj);
             }
 
             const canvasEl = document.getElementById('vision-canvas');
@@ -917,7 +965,7 @@
                     isDragging = false;
                     itemDiv.releasePointerCapture(e.pointerId);
                     itemDiv.style.zIndex = 1;
-                    localStorage.setItem('pro_workspace_data_v13', JSON.stringify(data));
+                    localStorage.setItem('pro_workspace_data_v14', JSON.stringify(data));
                 });
 
                 const handleEl = itemDiv.querySelector('.resize-handle');
@@ -948,7 +996,7 @@
                     isResizing = false;
                     handleEl.releasePointerCapture(e.pointerId);
                     itemDiv.style.zIndex = 1;
-                    localStorage.setItem('pro_workspace_data_v13', JSON.stringify(data));
+                    localStorage.setItem('pro_workspace_data_v14', JSON.stringify(data));
                 });
 
                 canvasEl.appendChild(itemDiv);
@@ -963,6 +1011,20 @@
             }
 
             document.getElementById('project-view-title').innerText = activeProj.name;
+            
+            // Link do tablicy marzeń w nagłówku projektu
+            const linkContainer = document.getElementById('project-vision-link-container');
+            linkContainer.innerHTML = '';
+            
+            const linkedBoard = data.visionBoards.find(b => b.projectId === activeProj.id);
+            if (linkedBoard) {
+                const btnBoard = document.createElement('button');
+                btnBoard.className = 'text-xs bg-amber-50 hover:bg-amber-100 text-[#e07a5f] font-bold px-3.5 py-2 rounded-xl border border-amber-900/10 transition-all shadow-2xs flex items-center gap-1.5';
+                btnBoard.innerHTML = `🖼️ Otwórz powiązaną tablicę marzeń`;
+                btnBoard.onclick = () => setActiveVisionBoard(linkedBoard.id);
+                linkContainer.appendChild(btnBoard);
+            }
+
             const mainTasksListEl = document.getElementById('main-tasks-list');
             mainTasksListEl.innerHTML = '';
 
