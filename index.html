@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workspace — Twoje Cele & Zadania</title>
+    <title>Workspace — Twoje Cele, Zadania & Vision Board</title>
     <!-- Google Fonts & Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -32,18 +32,23 @@
     <aside class="w-full md:w-72 glass-panel border-r border-amber-900/10 p-6 flex flex-col justify-between shrink-0 shadow-sm">
         <div>
             <!-- Nagłówek panelu -->
-            <div class="flex items-center gap-3 mb-8">
+            <div class="flex items-center gap-3 mb-6">
                 <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#e07a5f] to-[#f4a261] text-white flex items-center justify-center font-bold text-sm shadow-md">✨</div>
                 <div>
                     <h1 class="font-bold text-slate-800 text-base">Moje Centrum</h1>
-                    <p class="text-xs text-amber-900/60">Projekty & Priorytety</p>
+                    <p class="text-xs text-amber-900/60">Projekty & Motywacja</p>
                 </div>
             </div>
 
-            <!-- Przycisk widoku nadchodzących zadań -->
-            <button onclick="openUpcomingView()" id="sidebar-upcoming-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 text-slate-600 hover:bg-amber-100/40">
-                <span>🔥 Nadchodzące deadline'y</span>
-            </button>
+            <!-- Przyciski nawigacyjne w menu -->
+            <div class="space-y-1.5 mb-6">
+                <button onclick="openUpcomingView()" id="sidebar-upcoming-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 text-slate-600 hover:bg-amber-100/40">
+                    <span>🔥 Nadchodzące deadline'y</span>
+                </button>
+                <button onclick="openVisionBoardView()" id="sidebar-vision-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 text-slate-600 hover:bg-amber-100/40">
+                    <span>🖼️ Tablica Marzeń (Vision Board)</span>
+                </button>
+            </div>
 
             <!-- Sekcja projektów -->
             <div class="flex justify-between items-center mb-3">
@@ -66,7 +71,7 @@
     <!-- GŁÓWNA TREŚĆ -->
     <main class="flex-1 p-6 md:p-10 overflow-y-auto">
         
-        <!-- WIDOK: NADCHODZĄCE ZADANIA (Zamiast kalendarza) -->
+        <!-- WIDOK: NADCHODZĄCE ZADANIA -->
         <div id="upcoming-view" class="hidden">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
@@ -74,9 +79,24 @@
                     <p class="text-sm text-amber-900/60 mt-1">Wszystkie aktywne zadania posortowane od najbliższego terminu</p>
                 </div>
             </div>
+            <div id="upcoming-tasks-list" class="space-y-3 max-w-3xl"></div>
+        </div>
 
-            <div id="upcoming-tasks-list" class="space-y-3 max-w-3xl">
-                <!-- Generowane dynamicznie -->
+        <!-- WIDOK: TABLICA MARZEŃ (Vision Board) -->
+        <div id="vision-view" class="hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">🖼️ Tablica Marzeń</h2>
+                    <p class="text-sm text-amber-900/60 mt-1">Twoja osobista mapa celów i inspiracji z Pinteresta</p>
+                </div>
+                <button onclick="openVisionModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
+                    + Dodaj inspirację
+                </button>
+            </div>
+
+            <!-- Galeria inspiracji -->
+            <div id="vision-gallery" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Generowane dynamicznie zdjęcia -->
             </div>
         </div>
 
@@ -98,12 +118,10 @@
                 </div>
             </div>
 
-            <div id="main-tasks-list" class="space-y-4">
-                <!-- Lista zadań głównych -->
-            </div>
+            <div id="main-tasks-list" class="space-y-4"></div>
         </div>
 
-        <!-- WIDOK: Szczegóły Zadania Głównego (Tablica Kanban z 4 kolumnami) -->
+        <!-- WIDOK: Szczegóły Zadania Głównego (Kanban 4 kolumny) -->
         <div id="task-detail-view" class="hidden">
             <div class="flex items-center gap-3 mb-6">
                 <button onclick="backToProjectView()" class="glass-panel px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-white transition-all shadow-xs flex items-center gap-1">
@@ -183,6 +201,27 @@
         </div>
     </div>
 
+    <!-- Modal: Dodawanie inspiracji do Vision Board -->
+    <div id="vision-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
+        <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Dodaj obraz inspiracji</h3>
+            <form onsubmit="handleCreateVision(event)">
+                <div class="mb-4">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Link do obrazka (URL)</label>
+                    <input type="url" id="vision-url" required placeholder="https://..." class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Podpis / Cel (opcjonalnie)</label>
+                    <input type="text" id="vision-caption" placeholder="np. Moje wymarzone Dolomity 🏔️" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                </div>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="button" onclick="closeVisionModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
+                    <button type="submit" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-md">Dodaj</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="maintask-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
         <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
             <h3 class="text-lg font-bold text-slate-800 mb-4">Nowe zadanie główne</h3>
@@ -230,21 +269,25 @@
 
     <!-- Skrypt aplikacji -->
     <script>
-        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v6')) || {
+        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v7')) || {
             projects: [],
+            visionBoard: [],
             activeProjectId: null,
             activeMainTaskId: null,
-            currentView: 'upcoming' // domyślnie otwiera nadchodzące
+            currentView: 'upcoming'
         };
 
         function saveData() {
-            localStorage.setItem('pro_workspace_data_v6', JSON.stringify(data));
+            localStorage.setItem('pro_workspace_data_v7', JSON.stringify(data));
             render();
         }
 
         function openProjectModal() { document.getElementById('project-modal').classList.remove('hidden'); }
         function closeProjectModal() { document.getElementById('project-modal').classList.add('hidden'); document.getElementById('project-name').value = ''; }
         
+        function openVisionModal() { document.getElementById('vision-modal').classList.remove('hidden'); }
+        function closeVisionModal() { document.getElementById('vision-modal').classList.add('hidden'); document.getElementById('vision-url').value = ''; document.getElementById('vision-caption').value = ''; }
+
         function openMainTaskModal() { document.getElementById('maintask-modal').classList.remove('hidden'); }
         function closeMainTaskModal() { document.getElementById('maintask-modal').classList.add('hidden'); document.getElementById('maintask-title').value = ''; }
 
@@ -262,6 +305,13 @@
             saveData();
         }
 
+        function openVisionBoardView() {
+            data.currentView = 'vision';
+            data.activeProjectId = null;
+            data.activeMainTaskId = null;
+            saveData();
+        }
+
         function handleCreateProject(e) {
             e.preventDefault();
             const name = document.getElementById('project-name').value;
@@ -273,6 +323,27 @@
             data.projects.push(newProj);
             setActiveProject(newProj.id);
             closeProjectModal();
+        }
+
+        function handleCreateVision(e) {
+            e.preventDefault();
+            const url = document.getElementById('vision-url').value;
+            const caption = document.getElementById('vision-caption').value;
+            if (!data.visionBoard) data.visionBoard = [];
+            data.visionBoard.push({
+                id: 'vis_' + Date.now(),
+                url,
+                caption
+            });
+            closeVisionModal();
+            saveData();
+        }
+
+        function deleteVisionItem(id) {
+            if (confirm('Usunąć ten obraz z tablicy marzeń?')) {
+                data.visionBoard = data.visionBoard.filter(v => v.id !== id);
+                saveData();
+            }
         }
 
         function editProjectName() {
@@ -414,7 +485,7 @@
                     const sub = mainTask.subtasks.find(s => s.id === subtaskId);
                     if (sub) {
                         sub.notes = notes;
-                        localStorage.setItem('pro_workspace_data_v6', JSON.stringify(data));
+                        localStorage.setItem('pro_workspace_data_v7', JSON.stringify(data));
                     }
                 }
             }
@@ -442,20 +513,20 @@
         function render() {
             const projectsListEl = document.getElementById('projects-list');
             const upcomingViewEl = document.getElementById('upcoming-view');
+            const visionViewEl = document.getElementById('vision-view');
             const projectViewEl = document.getElementById('project-view');
             const taskDetailViewEl = document.getElementById('task-detail-view');
             const sidebarUpcomingBtn = document.getElementById('sidebar-upcoming-btn');
+            const sidebarVisionBtn = document.getElementById('sidebar-vision-btn');
 
             projectsListEl.innerHTML = '';
 
-            if (data.currentView === 'upcoming') {
-                sidebarUpcomingBtn.className = 'w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 sidebar-item-active';
-            } else {
-                sidebarUpcomingBtn.className = 'w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 text-slate-600 hover:bg-amber-100/40';
-            }
+            // Obsługa podświetlenia przycisków w menu
+            sidebarUpcomingBtn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-2 flex items-center gap-2 ${data.currentView === 'upcoming' ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
+            sidebarVisionBtn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 ${data.currentView === 'vision' ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
 
             data.projects.forEach(proj => {
-                const isActive = proj.id === data.activeProjectId && data.currentView !== 'upcoming';
+                const isActive = proj.id === data.activeProjectId && data.currentView !== 'upcoming' && data.currentView !== 'vision';
                 const btn = document.createElement('button');
                 btn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-between ${isActive ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
                 btn.innerHTML = `<span>${escapeHtml(proj.name)}</span>`;
@@ -464,12 +535,16 @@
             });
 
             upcomingViewEl.classList.add('hidden');
+            visionViewEl.classList.add('hidden');
             projectViewEl.classList.add('hidden');
             taskDetailViewEl.classList.add('hidden');
 
             if (data.currentView === 'upcoming') {
                 upcomingViewEl.classList.remove('hidden');
                 renderUpcomingView();
+            } else if (data.currentView === 'vision') {
+                visionViewEl.classList.remove('hidden');
+                renderVisionBoard();
             } else if (data.currentView === 'project') {
                 projectViewEl.classList.remove('hidden');
                 renderProjectView();
@@ -484,23 +559,24 @@
             listEl.innerHTML = '';
 
             let allSubtasks = [];
-            data.projects.forEach(proj => {
-                proj.mainTasks.forEach(mt => {
-                    if (mt.subtasks) {
-                        mt.subtasks.forEach(sub => {
-                            if (sub.deadline && sub.status !== 'done') {
-                                allSubtasks.push({
-                                    ...sub,
-                                    projectName: proj.name,
-                                    mainTaskTitle: mt.title
-                                });
-                            }
-                        });
-                    }
+            if (data.projects) {
+                data.projects.forEach(proj => {
+                    proj.mainTasks.forEach(mt => {
+                        if (mt.subtasks) {
+                            mt.subtasks.forEach(sub => {
+                                if (sub.deadline && sub.status !== 'done') {
+                                    allSubtasks.push({
+                                        ...sub,
+                                        projectName: proj.name,
+                                        mainTaskTitle: mt.title
+                                    });
+                                }
+                            });
+                        }
+                    });
                 });
-            });
+            }
 
-            // Sortowanie po dacie deadline (najbliższe pierwsze)
             allSubtasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
             if (allSubtasks.length === 0) {
@@ -533,6 +609,34 @@
                     </div>
                 `;
                 listEl.appendChild(card);
+            });
+        }
+
+        function renderVisionBoard() {
+            const galleryEl = document.getElementById('vision-gallery');
+            galleryEl.innerHTML = '';
+
+            const items = data.visionBoard || [];
+            if (items.length === 0) {
+                galleryEl.innerHTML = `
+                    <div class="col-span-full glass-panel p-12 text-center rounded-3xl text-amber-900/50 text-sm">
+                        Twój Vision Board jest jeszcze pusty. Kliknij "+ Dodaj inspirację", aby wkleić pierwsze zdjęcia z Pinteresta!
+                    </div>
+                `;
+                return;
+            }
+
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'glass-panel rounded-3xl overflow-hidden border border-amber-900/10 shadow-sm relative group flex flex-col';
+                card.innerHTML = `
+                    <div class="relative overflow-hidden aspect-4/3 bg-amber-50">
+                        <img src="${escapeHtml(item.url)}" alt="Inspiracja" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=600&q=80'">
+                        <button onclick="deleteVisionItem('${item.id}')" class="absolute top-3 right-3 bg-black/40 hover:bg-rose-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                    </div>
+                    ${item.caption ? `<div class="p-4 text-xs font-semibold text-slate-700 bg-white/50 border-t border-amber-900/5">${escapeHtml(item.caption)}</div>` : ''}
+                `;
+                galleryEl.appendChild(card);
             });
         }
 
