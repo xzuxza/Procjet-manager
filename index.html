@@ -78,7 +78,7 @@
             </div>
             <div id="projects-list" class="space-y-1.5 mb-6"></div>
 
-            <!-- Sekcja Tablic Marzeń (Vision Boards) -->
+            <!-- Sekcja Tablic Marzeń -->
             <div class="flex justify-between items-center mb-3">
                 <span class="text-xs font-bold uppercase tracking-wider text-amber-900/50">Tablice Marzeń</span>
                 <button onclick="openVisionBoardModal()" class="text-xs text-[#e07a5f] hover:text-[#d87053] font-bold bg-amber-50 hover:bg-amber-100/70 px-2.5 py-1 rounded-lg transition-colors">
@@ -107,7 +107,7 @@
             <div id="upcoming-tasks-list" class="space-y-3 max-w-3xl"></div>
         </div>
 
-        <!-- WIDOK: SWOBODNA TABLICA MARZEŃ (Vision Board Canvas) -->
+        <!-- WIDOK: SWOBODNA TABLICA MARZEŃ -->
         <div id="vision-canvas-view" class="hidden">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
@@ -124,11 +124,7 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Płótno z obrazkami -->
-            <div id="vision-canvas">
-                <!-- Tutaj użytkownik przesuwa i skaluje obrazki -->
-            </div>
+            <div id="vision-canvas"></div>
         </div>
 
         <!-- WIDOK: Lista Zadań Głównych w Projekcie -->
@@ -165,8 +161,9 @@
                     <div class="flex items-center gap-2">
                         <h2 id="detail-task-title" class="text-2xl font-bold text-slate-800"></h2>
                         <button onclick="editMainTaskName()" class="text-slate-400 hover:text-[#e07a5f] text-xs p-1" title="Edytuj nazwę">✏️</button>
+                        <button onclick="editMainTaskDeadline()" class="text-slate-400 hover:text-[#e07a5f] text-xs p-1 ml-2 bg-amber-50 px-2 py-1 rounded-lg border border-amber-900/10" title="Edytuj deadline">📅 Zmień termin</button>
                     </div>
-                    <p class="text-sm text-amber-900/60 mt-1">Pula zadań, Do podjęcia, W trakcie i Zrobione kroki</p>
+                    <p id="detail-task-deadline-info" class="text-sm text-amber-900/60 mt-1"></p>
                 </div>
                 <button onclick="openSubtaskModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
                     + Dodaj mniejsze zadanie
@@ -228,7 +225,6 @@
         </div>
     </div>
 
-    <!-- Modal: Nowa Tablica Marzeń -->
     <div id="visionboard-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
         <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
             <h3 class="text-lg font-bold text-slate-800 mb-4">Nowa Tablica Marzeń</h3>
@@ -245,7 +241,6 @@
         </div>
     </div>
 
-    <!-- Modal: Dodawanie obrazka do aktywnej Tablicy Marzeń -->
     <div id="addimage-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
         <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-md w-full shadow-xl border border-amber-900/10">
             <h3 class="text-lg font-bold text-slate-800 mb-4">Dodaj obraz na tablicę</h3>
@@ -267,6 +262,7 @@
         </div>
     </div>
 
+    <!-- Modal: Zadanie główne z opcjonalnym deadline'em -->
     <div id="maintask-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
         <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
             <h3 class="text-lg font-bold text-slate-800 mb-4">Nowe zadanie główne</h3>
@@ -274,6 +270,10 @@
                 <div class="mb-4">
                     <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Tytuł zadania głównego</label>
                     <input type="text" id="maintask-title" required placeholder="np. Zakup sprzętu" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Deadline (opcjonalnie)</label>
+                    <input type="date" id="maintask-deadline" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                 </div>
                 <div class="flex justify-end gap-2 mt-6">
                     <button type="button" onclick="closeMainTaskModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
@@ -314,7 +314,7 @@
 
     <!-- Skrypt aplikacji -->
     <script>
-        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v8')) || {
+        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v9')) || {
             projects: [],
             visionBoards: [],
             activeProjectId: null,
@@ -324,7 +324,7 @@
         };
 
         function saveData() {
-            localStorage.setItem('pro_workspace_data_v8', JSON.stringify(data));
+            localStorage.setItem('pro_workspace_data_v9', JSON.stringify(data));
             render();
         }
 
@@ -338,7 +338,7 @@
         function closeAddImageModal() { document.getElementById('addimage-modal').classList.add('hidden'); document.getElementById('image-url').value = ''; document.getElementById('image-file').value = ''; }
         
         function openMainTaskModal() { document.getElementById('maintask-modal').classList.remove('hidden'); }
-        function closeMainTaskModal() { document.getElementById('maintask-modal').classList.add('hidden'); document.getElementById('maintask-title').value = ''; }
+        function closeMainTaskModal() { document.getElementById('maintask-modal').classList.add('hidden'); document.getElementById('maintask-title').value = ''; document.getElementById('maintask-deadline').value = ''; }
 
         function openSubtaskModal() { document.getElementById('subtask-modal').classList.remove('hidden'); }
         function closeSubtaskModal() { 
@@ -429,8 +429,7 @@
                 const item = board.items.find(i => i.id === itemId);
                 if (item) {
                     item.width = parseInt(newWidth);
-                    // Zapis bezpośredni bez pełnego renderowania, żeby nie przerywać suwaka
-                    localStorage.setItem('pro_workspace_data_v8', JSON.stringify(data));
+                    localStorage.setItem('pro_workspace_data_v9', JSON.stringify(data));
                     const el = document.getElementById(itemId);
                     if (el) el.style.width = item.width + 'px';
                 }
@@ -492,6 +491,18 @@
             }
         }
 
+        function editMainTaskDeadline() {
+            const proj = data.projects.find(p => p.id === data.activeProjectId);
+            if (!proj) return;
+            const mt = proj.mainTasks.find(m => m.id === data.activeMainTaskId);
+            if (!mt) return;
+            const newDate = prompt('Wpisz nowy deadline (YYYY-MM-DD) lub zostaw puste, aby usunąć:', mt.deadline || '');
+            if (newDate !== null) {
+                mt.deadline = newDate.trim() !== '' ? newDate.trim() : null;
+                saveData();
+            }
+        }
+
         function editSubtaskName(subtaskId) {
             const proj = data.projects.find(p => p.id === data.activeProjectId);
             if (!proj) return;
@@ -506,6 +517,20 @@
             }
         }
 
+        function editSubtaskDeadline(subtaskId) {
+            const proj = data.projects.find(p => p.id === data.activeProjectId);
+            if (!proj) return;
+            const mt = proj.mainTasks.find(m => m.id === data.activeMainTaskId);
+            if (!mt) return;
+            const sub = mt.subtasks.find(s => s.id === subtaskId);
+            if (!sub) return;
+            const newDate = prompt('Edytuj deadline (YYYY-MM-DD) lub zostaw puste, aby usunąć:', sub.deadline || '');
+            if (newDate !== null) {
+                sub.deadline = newDate.trim() !== '' ? newDate.trim() : null;
+                saveData();
+            }
+        }
+
         function deleteActiveProject() {
             if (confirm('Usunąć ten projekt ze wszystkimi zadaniami?')) {
                 data.projects = data.projects.filter(p => p.id !== data.activeProjectId);
@@ -516,11 +541,13 @@
         function handleCreateMainTask(e) {
             e.preventDefault();
             const title = document.getElementById('maintask-title').value;
+            const deadline = document.getElementById('maintask-deadline').value;
             const proj = data.projects.find(p => p.id === data.activeProjectId);
             if (proj) {
                 proj.mainTasks.push({
                     id: 'maintask_' + Date.now(),
                     title,
+                    deadline: deadline || null,
                     subtasks: []
                 });
             }
@@ -609,7 +636,7 @@
                     const sub = mainTask.subtasks.find(s => s.id === subtaskId);
                     if (sub) {
                         sub.notes = notes;
-                        localStorage.setItem('pro_workspace_data_v8', JSON.stringify(data));
+                        localStorage.setItem('pro_workspace_data_v9', JSON.stringify(data));
                     }
                 }
             }
@@ -627,7 +654,6 @@
             saveData();
         }
 
-        // Renderowanie ogólne
         function render() {
             const projectsListEl = document.getElementById('projects-list');
             const visionBoardsListEl = document.getElementById('vision-boards-list');
@@ -642,7 +668,6 @@
 
             sidebarUpcomingBtn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 ${data.currentView === 'upcoming' ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
 
-            // Render projektów celów
             if (data.projects) {
                 data.projects.forEach(proj => {
                     const isActive = proj.id === data.activeProjectId && data.currentView !== 'upcoming';
@@ -654,7 +679,6 @@
                 });
             }
 
-            // Render tablic marzeń w menu
             if (data.visionBoards) {
                 data.visionBoards.forEach(board => {
                     const isActive = board.id === data.activeVisionBoardId;
@@ -690,17 +714,29 @@
             const listEl = document.getElementById('upcoming-tasks-list');
             listEl.innerHTML = '';
 
-            let allSubtasks = [];
+            let allTasks = [];
             if (data.projects) {
                 data.projects.forEach(proj => {
                     proj.mainTasks.forEach(mt => {
+                        // Zadania główne z deadline
+                        if (mt.deadline) {
+                            allTasks.push({
+                                title: mt.title,
+                                deadline: mt.deadline,
+                                projectName: proj.name,
+                                type: 'main'
+                            });
+                        }
+                        // Mniejsze zadania z deadline
                         if (mt.subtasks) {
                             mt.subtasks.forEach(sub => {
                                 if (sub.deadline && sub.status !== 'done') {
-                                    allSubtasks.push({
-                                        ...sub,
+                                    allTasks.push({
+                                        title: sub.title,
+                                        deadline: sub.deadline,
                                         projectName: proj.name,
-                                        mainTaskTitle: mt.title
+                                        mainTaskTitle: mt.title,
+                                        type: 'sub'
                                     });
                                 }
                             });
@@ -709,12 +745,12 @@
                 });
             }
 
-            allSubtasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+            allTasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
-            if (allSubtasks.length === 0) {
+            if (allTasks.length === 0) {
                 listEl.innerHTML = `
                     <div class="glass-panel p-8 text-center rounded-2xl text-amber-900/50 text-sm">
-                        Brak nadchodzących zadań z deadline'ami. Dodaj terminy do swoich mniejszych kroków!
+                        Brak nadchodzących zadań z deadline'ami. Dodaj terminy do zadań głównych lub mniejszych kroków!
                     </div>
                 `;
                 return;
@@ -722,21 +758,23 @@
 
             const today = new Date().toISOString().split('T')[0];
 
-            allSubtasks.forEach(sub => {
-                const isOverdue = sub.deadline < today;
+            allTasks.forEach(task => {
+                const isOverdue = task.deadline < today;
                 const card = document.createElement('div');
                 card.className = 'glass-panel p-4 rounded-2xl border border-amber-900/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-2xs';
 
                 card.innerHTML = `
                     <div>
                         <div class="flex items-center gap-2 mb-1">
-                            <span class="text-[10px] font-bold text-[#e07a5f] bg-amber-50 px-2 py-0.5 rounded">${escapeHtml(sub.projectName)} › ${escapeHtml(sub.mainTaskTitle)}</span>
+                            <span class="text-[10px] font-bold text-[#e07a5f] bg-amber-50 px-2 py-0.5 rounded">
+                                ${escapeHtml(task.projectName)} ${task.mainTaskTitle ? '› ' + escapeHtml(task.mainTaskTitle) : ' (Zadanie główne)'}
+                            </span>
                         </div>
-                        <h4 class="font-bold text-slate-800 text-sm">${escapeHtml(sub.title)}</h4>
+                        <h4 class="font-bold text-slate-800 text-sm">${escapeHtml(task.title)}</h4>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="text-xs font-bold ${isOverdue ? 'text-rose-600 bg-rose-50 px-2 py-1 rounded' : 'text-amber-900/70'}">
-                            📅 ${sub.deadline} ${isOverdue ? '⚠️' : ''}
+                            📅 ${task.deadline} ${isOverdue ? '⚠️' : ''}
                         </span>
                     </div>
                 `;
@@ -744,7 +782,6 @@
             });
         }
 
-        // Renderowanie płótna Vision Board z przesuwaniem i skalowaniem
         function renderVisionCanvas() {
             const board = data.visionBoards.find(b => b.id === data.activeVisionBoardId);
             if (!board) {
@@ -786,12 +823,10 @@
                     </div>
                 `;
 
-                // Logika przeciągania (drag and drop myszką i palcem)
                 let isDragging = false;
                 let startX, startY;
 
                 itemDiv.addEventListener('pointerdown', (e) => {
-                    // Ignoruj jeśli kliknięto w suwak zmiany rozmiaru lub przycisk usuwania
                     if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
                     isDragging = true;
                     startX = e.clientX - item.x;
@@ -813,7 +848,7 @@
                     isDragging = false;
                     itemDiv.releasePointerCapture(e.pointerId);
                     itemDiv.style.zIndex = 1;
-                    localStorage.setItem('pro_workspace_data_v8', JSON.stringify(data));
+                    localStorage.setItem('pro_workspace_data_v9', JSON.stringify(data));
                 });
 
                 canvasEl.appendChild(itemDiv);
@@ -852,6 +887,7 @@
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-2">
                                 <h3 class="font-bold text-slate-800 text-base">${escapeHtml(mt.title)}</h3>
+                                ${mt.deadline ? `<span class="text-xs text-amber-900/70 bg-amber-50 px-2 py-0.5 rounded-md font-medium">📅 ${mt.deadline}</span>` : ''}
                                 <span class="text-xs bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">${doneCount}/${total} ukończone</span>
                             </div>
                             <div class="w-full bg-amber-950/10 rounded-full h-2.5 max-w-md overflow-hidden">
@@ -877,6 +913,8 @@
             }
 
             document.getElementById('detail-task-title').innerText = mainTask.title;
+            const deadlineInfo = document.getElementById('detail-task-deadline-info');
+            deadlineInfo.innerText = mainTask.deadline ? `📅 Deadline zadania głównego: ${mainTask.deadline}` : `⏳ Brak deadline'u zadania głównego`;
 
             const colPool = document.getElementById('column-pool');
             const colTodo = document.getElementById('column-todo');
@@ -914,9 +952,12 @@
                     </div>
 
                     <div class="flex justify-between items-center text-xs mt-4 pt-3 border-t border-amber-950/5">
-                        <span class="${isOverdue ? 'text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded' : 'text-amber-900/60 font-medium'}">
-                            ${sub.deadline ? `📅 ${sub.deadline} ${isOverdue ? '⚠️' : ''}` : '⏳ Brak deadline\'u'}
-                        </span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="${isOverdue ? 'text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded' : 'text-amber-900/60 font-medium'}">
+                                ${sub.deadline ? `📅 ${sub.deadline} ${isOverdue ? '⚠️' : ''}` : '⏳ Brak'}
+                            </span>
+                            <button onclick="editSubtaskDeadline('${sub.id}')" class="text-slate-400 hover:text-[#e07a5f] text-[10px] bg-amber-50 px-1.5 py-0.5 rounded border border-amber-900/10" title="Edytuj deadline">📅 zmień</button>
+                        </div>
                         <div class="flex gap-1">
                             ${sub.status !== 'pool' ? `<button onclick="moveSubtask('${sub.id}', 'pool')" title="Pula" class="px-1.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[10px] font-semibold text-slate-700">📁</button>` : ''}
                             ${sub.status !== 'todo' ? `<button onclick="moveSubtask('${sub.id}', 'todo')" title="Do podjęcia" class="px-1.5 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[10px] font-semibold text-amber-800">🎯</button>` : ''}
