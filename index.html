@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workspace — Twoje Cele & Kalendarz</title>
+    <title>Workspace — Twoje Cele & Zadania</title>
     <!-- Google Fonts & Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -36,13 +36,13 @@
                 <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#e07a5f] to-[#f4a261] text-white flex items-center justify-center font-bold text-sm shadow-md">✨</div>
                 <div>
                     <h1 class="font-bold text-slate-800 text-base">Moje Centrum</h1>
-                    <p class="text-xs text-amber-900/60">Projekty & Kalendarz</p>
+                    <p class="text-xs text-amber-900/60">Projekty & Priorytety</p>
                 </div>
             </div>
 
-            <!-- Przycisk widoku kalendarza ogólnego -->
-            <button onclick="openCalendarView()" id="sidebar-calendar-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 text-slate-600 hover:bg-amber-100/40">
-                <span>📅 Kalendarz Tygodniowy</span>
+            <!-- Przycisk widoku nadchodzących zadań -->
+            <button onclick="openUpcomingView()" id="sidebar-upcoming-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 text-slate-600 hover:bg-amber-100/40">
+                <span>🔥 Nadchodzące deadline'y</span>
             </button>
 
             <!-- Sekcja projektów -->
@@ -66,22 +66,17 @@
     <!-- GŁÓWNA TREŚĆ -->
     <main class="flex-1 p-6 md:p-10 overflow-y-auto">
         
-        <!-- WIDOK: KALENDARZ TYGODNIOWY -->
-        <div id="calendar-view" class="hidden">
+        <!-- WIDOK: NADCHODZĄCE ZADANIA (Zamiast kalendarza) -->
+        <div id="upcoming-view" class="hidden">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
-                    <h2 class="text-2xl font-bold text-slate-800">📅 Kalendarz Tygodniowy</h2>
-                    <p class="text-sm text-amber-900/60 mt-1">Przeglądaj zadania z deadline'ami na poszczególne dni</p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="changeWeek(-1)" class="glass-panel px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-white transition-all">← Poprzedni tydzień</button>
-                    <button onclick="resetWeek()" class="glass-panel px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-white transition-all text-[#e07a5f]">Dzisiaj</button>
-                    <button onclick="changeWeek(1)" class="glass-panel px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-white transition-all">Następny tydzień →</button>
+                    <h2 class="text-2xl font-bold text-slate-800">🔥 Nadchodzące deadline'y</h2>
+                    <p class="text-sm text-amber-900/60 mt-1">Wszystkie aktywne zadania posortowane od najbliższego terminu</p>
                 </div>
             </div>
 
-            <div id="weekly-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4">
-                <!-- Generowane dynamicznie dni tygodnia -->
+            <div id="upcoming-tasks-list" class="space-y-3 max-w-3xl">
+                <!-- Generowane dynamicznie -->
             </div>
         </div>
 
@@ -89,15 +84,18 @@
         <div id="project-view" class="hidden">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
                         <h2 id="project-view-title" class="text-2xl font-bold text-slate-800"></h2>
-                        <button onclick="deleteActiveProject()" class="text-xs text-amber-900/40 hover:text-rose-600 transition-colors bg-white/50 px-2 py-1 rounded-lg border border-amber-950/5" title="Usuń projekt">🗑️ Usuń projekt</button>
+                        <button onclick="editProjectName()" class="text-slate-400 hover:text-[#e07a5f] text-xs p-1" title="Edytuj nazwę projektu">✏️</button>
                     </div>
                     <p class="text-sm text-amber-900/60 mt-1">Zadania główne projektu i ich stopień ukończenia</p>
                 </div>
-                <button onclick="openMainTaskModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
-                    + Dodaj zadanie główne
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="deleteActiveProject()" class="text-xs text-amber-900/40 hover:text-rose-600 transition-colors bg-white/50 px-3 py-2 rounded-xl border border-amber-950/5">🗑️ Usuń projekt</button>
+                    <button onclick="openMainTaskModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
+                        + Dodaj zadanie główne
+                    </button>
+                </div>
             </div>
 
             <div id="main-tasks-list" class="space-y-4">
@@ -115,7 +113,10 @@
 
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
-                    <h2 id="detail-task-title" class="text-2xl font-bold text-slate-800"></h2>
+                    <div class="flex items-center gap-2">
+                        <h2 id="detail-task-title" class="text-2xl font-bold text-slate-800"></h2>
+                        <button onclick="editMainTaskName()" class="text-slate-400 hover:text-[#e07a5f] text-xs p-1" title="Edytuj nazwę">✏️</button>
+                    </div>
                     <p class="text-sm text-amber-900/60 mt-1">Pula zadań, Do podjęcia, W trakcie i Zrobione kroki</p>
                 </div>
                 <button onclick="openSubtaskModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
@@ -190,10 +191,6 @@
                     <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Tytuł zadania głównego</label>
                     <input type="text" id="maintask-title" required placeholder="np. Zakup sprzętu" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Deadline (opcjonalnie)</label>
-                    <input type="date" id="maintask-deadline" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
-                </div>
                 <div class="flex justify-end gap-2 mt-6">
                     <button type="button" onclick="closeMainTaskModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
                     <button type="submit" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-md">Dodaj</button>
@@ -233,16 +230,15 @@
 
     <!-- Skrypt aplikacji -->
     <script>
-        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v5')) || {
+        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v6')) || {
             projects: [],
             activeProjectId: null,
             activeMainTaskId: null,
-            currentView: 'calendar',
-            weekOffset: 0
+            currentView: 'upcoming' // domyślnie otwiera nadchodzące
         };
 
         function saveData() {
-            localStorage.setItem('pro_workspace_data_v5', JSON.stringify(data));
+            localStorage.setItem('pro_workspace_data_v6', JSON.stringify(data));
             render();
         }
 
@@ -250,7 +246,7 @@
         function closeProjectModal() { document.getElementById('project-modal').classList.add('hidden'); document.getElementById('project-name').value = ''; }
         
         function openMainTaskModal() { document.getElementById('maintask-modal').classList.remove('hidden'); }
-        function closeMainTaskModal() { document.getElementById('maintask-modal').classList.add('hidden'); document.getElementById('maintask-title').value = ''; document.getElementById('maintask-deadline').value = ''; }
+        function closeMainTaskModal() { document.getElementById('maintask-modal').classList.add('hidden'); document.getElementById('maintask-title').value = ''; }
 
         function openSubtaskModal() { document.getElementById('subtask-modal').classList.remove('hidden'); }
         function closeSubtaskModal() { 
@@ -259,8 +255,8 @@
             document.getElementById('subtask-deadline').value = ''; 
         }
 
-        function openCalendarView() {
-            data.currentView = 'calendar';
+        function openUpcomingView() {
+            data.currentView = 'upcoming';
             data.activeProjectId = null;
             data.activeMainTaskId = null;
             saveData();
@@ -279,23 +275,57 @@
             closeProjectModal();
         }
 
+        function editProjectName() {
+            const proj = data.projects.find(p => p.id === data.activeProjectId);
+            if (!proj) return;
+            const newName = prompt('Edytuj nazwę projektu:', proj.name);
+            if (newName !== null && newName.trim() !== '') {
+                proj.name = newName.trim();
+                saveData();
+            }
+        }
+
+        function editMainTaskName() {
+            const proj = data.projects.find(p => p.id === data.activeProjectId);
+            if (!proj) return;
+            const mt = proj.mainTasks.find(m => m.id === data.activeMainTaskId);
+            if (!mt) return;
+            const newName = prompt('Edytuj nazwę zadania głównego:', mt.title);
+            if (newName !== null && newName.trim() !== '') {
+                mt.title = newName.trim();
+                saveData();
+            }
+        }
+
+        function editSubtaskName(subtaskId) {
+            const proj = data.projects.find(p => p.id === data.activeProjectId);
+            if (!proj) return;
+            const mt = proj.mainTasks.find(m => m.id === data.activeMainTaskId);
+            if (!mt) return;
+            const sub = mt.subtasks.find(s => s.id === subtaskId);
+            if (!sub) return;
+            const newName = prompt('Edytuj nazwę mniejszego kroku:', sub.title);
+            if (newName !== null && newName.trim() !== '') {
+                sub.title = newName.trim();
+                saveData();
+            }
+        }
+
         function deleteActiveProject() {
             if (confirm('Usunąć ten projekt ze wszystkimi zadaniami?')) {
                 data.projects = data.projects.filter(p => p.id !== data.activeProjectId);
-                openCalendarView();
+                openUpcomingView();
             }
         }
 
         function handleCreateMainTask(e) {
             e.preventDefault();
             const title = document.getElementById('maintask-title').value;
-            const deadline = document.getElementById('maintask-deadline').value;
             const proj = data.projects.find(p => p.id === data.activeProjectId);
             if (proj) {
                 proj.mainTasks.push({
                     id: 'maintask_' + Date.now(),
                     title,
-                    deadline: deadline || null,
                     subtasks: []
                 });
             }
@@ -314,7 +344,6 @@
             }
         }
 
-        // Automatyczne podpowiadanie statusu "Do podjęcia" w modalu, jeśli wpisano deadline
         function checkDeadlineStatus(dateVal) {
             const statusSelect = document.getElementById('subtask-status');
             if (dateVal && statusSelect.value === 'pool') {
@@ -330,7 +359,6 @@
             const deadline = document.getElementById('subtask-deadline').value;
             let status = document.getElementById('subtask-status').value;
 
-            // Jeśli jest deadline, a użytkownik zostawił w puli, automatycznie wrzucamy do "Do podjęcia"
             if (deadline && status === 'pool') {
                 status = 'todo';
             }
@@ -386,7 +414,7 @@
                     const sub = mainTask.subtasks.find(s => s.id === subtaskId);
                     if (sub) {
                         sub.notes = notes;
-                        localStorage.setItem('pro_workspace_data_v5', JSON.stringify(data));
+                        localStorage.setItem('pro_workspace_data_v6', JSON.stringify(data));
                     }
                 }
             }
@@ -411,50 +439,23 @@
             saveData();
         }
 
-        function changeWeek(direction) {
-            data.weekOffset += direction;
-            render();
-        }
-
-        function resetWeek() {
-            data.weekOffset = 0;
-            render();
-        }
-
-        function getWeekDates(offset) {
-            const now = new Date();
-            const currentDayOfWeek = now.getDay();
-            const distanceToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
-            
-            const monday = new Date(now);
-            monday.setDate(now.getDate() + distanceToMonday + (offset * 7));
-
-            let week = [];
-            for (let i = 0; i < 7; i++) {
-                const day = new Date(monday);
-                day.setDate(monday.getDate() + i);
-                week.push(day.toISOString().split('T')[0]);
-            }
-            return week;
-        }
-
         function render() {
             const projectsListEl = document.getElementById('projects-list');
-            const calendarViewEl = document.getElementById('calendar-view');
+            const upcomingViewEl = document.getElementById('upcoming-view');
             const projectViewEl = document.getElementById('project-view');
             const taskDetailViewEl = document.getElementById('task-detail-view');
-            const sidebarCalendarBtn = document.getElementById('sidebar-calendar-btn');
+            const sidebarUpcomingBtn = document.getElementById('sidebar-upcoming-btn');
 
             projectsListEl.innerHTML = '';
 
-            if (data.currentView === 'calendar') {
-                sidebarCalendarBtn.className = 'w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 sidebar-item-active';
+            if (data.currentView === 'upcoming') {
+                sidebarUpcomingBtn.className = 'w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 sidebar-item-active';
             } else {
-                sidebarCalendarBtn.className = 'w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 text-slate-600 hover:bg-amber-100/40';
+                sidebarUpcomingBtn.className = 'w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 text-slate-600 hover:bg-amber-100/40';
             }
 
             data.projects.forEach(proj => {
-                const isActive = proj.id === data.activeProjectId && data.currentView !== 'calendar';
+                const isActive = proj.id === data.activeProjectId && data.currentView !== 'upcoming';
                 const btn = document.createElement('button');
                 btn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-between ${isActive ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
                 btn.innerHTML = `<span>${escapeHtml(proj.name)}</span>`;
@@ -462,13 +463,13 @@
                 projectsListEl.appendChild(btn);
             });
 
-            calendarViewEl.classList.add('hidden');
+            upcomingViewEl.classList.add('hidden');
             projectViewEl.classList.add('hidden');
             taskDetailViewEl.classList.add('hidden');
 
-            if (data.currentView === 'calendar') {
-                calendarViewEl.classList.remove('hidden');
-                renderCalendar();
+            if (data.currentView === 'upcoming') {
+                upcomingViewEl.classList.remove('hidden');
+                renderUpcomingView();
             } else if (data.currentView === 'project') {
                 projectViewEl.classList.remove('hidden');
                 renderProjectView();
@@ -478,33 +479,20 @@
             }
         }
 
-        function renderCalendar() {
-            const gridEl = document.getElementById('weekly-grid');
-            gridEl.innerHTML = '';
+        function renderUpcomingView() {
+            const listEl = document.getElementById('upcoming-tasks-list');
+            listEl.innerHTML = '';
 
-            const weekDays = getWeekDates(data.weekOffset);
-            const dayNames = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'];
-            const todayStr = new Date().toISOString().split('T')[0];
-
-            let allTasksWithDeadline = [];
+            let allSubtasks = [];
             data.projects.forEach(proj => {
                 proj.mainTasks.forEach(mt => {
-                    if (mt.deadline) {
-                        allTasksWithDeadline.push({
-                            title: mt.title,
-                            deadline: mt.deadline,
-                            projectName: proj.name,
-                            status: 'todo'
-                        });
-                    }
                     if (mt.subtasks) {
                         mt.subtasks.forEach(sub => {
-                            if (sub.deadline) {
-                                allTasksWithDeadline.push({
-                                    title: sub.title,
-                                    deadline: sub.deadline,
+                            if (sub.deadline && sub.status !== 'done') {
+                                allSubtasks.push({
+                                    ...sub,
                                     projectName: proj.name,
-                                    status: sub.status
+                                    mainTaskTitle: mt.title
                                 });
                             }
                         });
@@ -512,42 +500,46 @@
                 });
             });
 
-            weekDays.forEach((dateStr, index) => {
-                const isToday = dateStr === todayStr;
-                const dayColumn = document.createElement('div');
-                dayColumn.className = `glass-panel rounded-2xl p-4 flex flex-col gap-3 ${isToday ? 'border-2 border-[#e07a5f] bg-amber-50/50' : ''}`;
+            // Sortowanie po dacie deadline (najbliższe pierwsze)
+            allSubtasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
-                const tasksForDay = allTasksWithDeadline.filter(t => t.deadline === dateStr);
-
-                let tasksHtml = '';
-                if (tasksForDay.length === 0) {
-                    tasksHtml = `<div class="text-xs text-amber-900/40 italic py-4 text-center">Brak zadań</div>`;
-                } else {
-                    tasksHtml = tasksForDay.map(t => `
-                        <div class="bg-white/90 p-2.5 rounded-xl border border-amber-900/10 text-xs shadow-2xs">
-                            <span class="text-[10px] font-bold text-[#e07a5f] block mb-0.5">${escapeHtml(t.projectName)}</span>
-                            <span class="font-medium text-slate-800 ${t.status === 'done' ? 'line-through text-slate-400' : ''}">${escapeHtml(t.title)}</span>
-                        </div>
-                    `).join('');
-                }
-
-                dayColumn.innerHTML = `
-                    <div class="border-b border-amber-950/10 pb-2 flex justify-between items-center">
-                        <span class="font-bold text-sm text-slate-800">${dayNames[index]}</span>
-                        <span class="text-xs ${isToday ? 'bg-[#e07a5f] text-white px-2 py-0.5 rounded-full font-bold' : 'text-amber-900/50'}">${dateStr.slice(5)}</span>
-                    </div>
-                    <div class="space-y-2 flex-1">
-                        ${tasksHtml}
+            if (allSubtasks.length === 0) {
+                listEl.innerHTML = `
+                    <div class="glass-panel p-8 text-center rounded-2xl text-amber-900/50 text-sm">
+                        Brak nadchodzących zadań z deadline'ami. Dodaj terminy do swoich mniejszych kroków!
                     </div>
                 `;
-                gridEl.appendChild(dayColumn);
+                return;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+
+            allSubtasks.forEach(sub => {
+                const isOverdue = sub.deadline < today;
+                const card = document.createElement('div');
+                card.className = 'glass-panel p-4 rounded-2xl border border-amber-900/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-2xs';
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-[10px] font-bold text-[#e07a5f] bg-amber-50 px-2 py-0.5 rounded">${escapeHtml(sub.projectName)} › ${escapeHtml(sub.mainTaskTitle)}</span>
+                        </div>
+                        <h4 class="font-bold text-slate-800 text-sm">${escapeHtml(sub.title)}</h4>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-bold ${isOverdue ? 'text-rose-600 bg-rose-50 px-2 py-1 rounded' : 'text-amber-900/70'}">
+                            📅 ${sub.deadline} ${isOverdue ? '⚠️' : ''}
+                        </span>
+                    </div>
+                `;
+                listEl.appendChild(card);
             });
         }
 
         function renderProjectView() {
             const activeProj = data.projects.find(p => p.id === data.activeProjectId);
             if (!activeProj) {
-                openCalendarView();
+                openUpcomingView();
                 return;
             }
 
@@ -576,7 +568,6 @@
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-2">
                                 <h3 class="font-bold text-slate-800 text-base">${escapeHtml(mt.title)}</h3>
-                                ${mt.deadline ? `<span class="text-xs text-amber-900/60 bg-amber-50 px-2 py-0.5 rounded-md">📅 ${mt.deadline}</span>` : ''}
                                 <span class="text-xs bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">${doneCount}/${total} ukończone</span>
                             </div>
                             <div class="w-full bg-amber-950/10 rounded-full h-2.5 max-w-md overflow-hidden">
@@ -626,7 +617,10 @@
 
                 card.innerHTML = `
                     <div class="flex justify-between items-start gap-2 mb-2">
-                        <span class="font-bold text-slate-800 text-sm">${escapeHtml(sub.title)}</span>
+                        <div class="flex items-center gap-1.5 flex-1">
+                            <span class="font-bold text-slate-800 text-sm">${escapeHtml(sub.title)}</span>
+                            <button onclick="editSubtaskName('${sub.id}')" class="text-slate-300 hover:text-[#e07a5f] text-[10px]" title="Edytuj nazwę">✏️</button>
+                        </div>
                         <button onclick="deleteSubtask('${sub.id}')" class="text-slate-300 hover:text-rose-600 text-xs transition-colors">✕</button>
                     </div>
                     
