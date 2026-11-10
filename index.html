@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Moje Cele & Projekty ✨</title>
+    <!-- Google Fonts & Tailwind CSS dla pięknego i nowoczesnego wyglądu -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+    </style>
+</head>
+<body class="text-slate-700 pb-12">
+
+    <!-- Nagłówek -->
+    <header class="max-w-6xl mx-auto px-4 pt-8 pb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-pink-600 flex items-center gap-2">
+                ✨ Moje Centrum Dowodzenia
+            </h1>
+            <p class="text-sm text-slate-500 mt-1">Planuj małe kroki, osiągaj wielkie cele!</p>
+        </div>
+        <button onclick="openProjectModal()" class="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-semibold px-5 py-2.5 rounded-2xl shadow-lg shadow-pink-500/20 transition-all transform hover:-translate-y-0.5">
+            + Nowy Projekt
+        </button>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4">
+        <!-- Wybór projektu -->
+        <div class="glass-card rounded-3xl p-6 shadow-xl mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                    📁 Twoje Projekty
+                </h2>
+                <div id="project-actions" class="flex gap-2"></div>
+            </div>
+            <div id="projects-list" class="flex flex-wrap gap-3">
+                <!-- Tutaj dynamicznie wskoczą projekty -->
+            </div>
+        </div>
+
+        <!-- Aktywny projekt i widok Kanban -->
+        <div id="active-project-container" class="hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <div>
+                    <h3 id="active-project-title" class="text-2xl font-bold text-slate-800 flex items-center gap-3"></h3>
+                </div>
+                <button onclick="openTaskModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-medium px-4 py-2 rounded-xl shadow-md transition-all">
+                    + Dodaj Zadanie
+                </button>
+            </div>
+
+            <!-- Tablica Kanban (3 kolumny) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Kolumna: Do podjęcia -->
+                <div class="glass-card rounded-3xl p-5 shadow-lg border-t-4 border-pink-400">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-bold text-slate-700 flex items-center gap-2">🎯 Do podjęcia</h4>
+                        <span id="count-todo" class="bg-pink-100 text-pink-600 text-xs px-2.5 py-1 rounded-full font-bold">0</span>
+                    </div>
+                    <div id="column-todo" class="space-y-3 min-h-[200px]" ondragover="allowDrop(event)" ondrop="drop(event, 'todo')"></div>
+                </div>
+
+                <!-- Kolumna: W trakcie -->
+                <div class="glass-card rounded-3xl p-5 shadow-lg border-t-4 border-purple-400">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-bold text-slate-700 flex items-center gap-2">⚡ W trakcie</h4>
+                        <span id="count-inprogress" class="bg-purple-100 text-purple-600 text-xs px-2.5 py-1 rounded-full font-bold">0</span>
+                    </div>
+                    <div id="column-inprogress" class="space-y-3 min-h-[200px]" ondragover="allowDrop(event)" ondrop="drop(event, 'inprogress')"></div>
+                </div>
+
+                <!-- Kolumna: Zrobione -->
+                <div class="glass-card rounded-3xl p-5 shadow-lg border-t-4 border-emerald-400">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-bold text-slate-700 flex items-center gap-2">✨ Zrobione</h4>
+                        <span id="count-done" class="bg-emerald-100 text-emerald-600 text-xs px-2.5 py-1 rounded-full font-bold">0</span>
+                    </div>
+                    <div id="column-done" class="space-y-3 min-h-[200px]" ondragover="allowDrop(event)" ondrop="drop(event, 'done')"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stan pusty -->
+        <div id="empty-state" class="text-center py-16 glass-card rounded-3xl shadow-xl">
+            <div class="text-5xl mb-4">💡</div>
+            <h3 class="text-xl font-semibold text-slate-700">Brak wybranego projektu</h3>
+            <p class="text-slate-500 mt-1 mb-6">Stwórz swój pierwszy projekt (np. "Via Ferraty" lub "Własny biznes"), aby zacząć!</p>
+            <button onclick="openProjectModal()" class="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-2.5 rounded-2xl shadow-md transition-all">
+                Stwórz projekt
+            </button>
+        </div>
+    </main>
+
+    <!-- Modal: Nowy Projekt -->
+    <div id="project-modal" class="fixed inset-0 bg-black/30 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="glass-card bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl">
+            <h3 class="text-xl font-bold text-slate-800 mb-4">Nowy Projekt</h3>
+            <form onsubmit="handleCreateProject(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Nazwa projektu</label>
+                    <input type="text" id="project-name" required placeholder="np. Via Ferraty 🧗‍♀️" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white/50">
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="closeProjectModal()" class="px-4 py-2 text-slate-500 hover:text-slate-700 font-medium">Anuluj</button>
+                    <button type="submit" class="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-5 py-2 rounded-xl shadow-md">Dodaj</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Nowe Zadanie -->
+    <div id="task-modal" class="fixed inset-0 bg-black/30 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="glass-card bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl">
+            <h3 class="text-xl font-bold text-slate-800 mb-4">Nowe Zadanie</h3>
+            <form onsubmit="handleCreateTask(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Treść zadania (możesz dodać emoji)</label>
+                    <input type="text" id="task-title" required placeholder="np. Kupić uprząż i kask 🎒" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/50">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Deadline</label>
+                    <input type="date" id="task-deadline" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/50">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Etap</label>
+                    <select id="task-status" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/50">
+                        <option value="todo">Do podjęcia</option>
+                        <option value="inprogress">W trakcie</option>
+                        <option value="done">Zrobione</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="closeTaskModal()" class="px-4 py-2 text-slate-500 hover:text-slate-700 font-medium">Anuluj</button>
+                    <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2 rounded-xl shadow-md">Dodaj zadanie</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Skrypt aplikacji (localStorage + obsługa interakcji) -->
+    <script>
+        let data = JSON.parse(localStorage.getItem('girl_tasks_app_data')) || {
+            projects: [],
+            activeProjectId: null
+        };
+
+        function saveData() {
+            localStorage.setItem('girl_tasks_app_data', JSON.stringify(data));
+            render();
+        }
+
+        // Modale
+        function openProjectModal() { document.getElementById('project-modal').classList.remove('hidden'); }
+        function closeProjectModal() { document.getElementById('project-modal').classList.add('hidden'); document.getElementById('project-name').value = ''; }
+        
+        function openTaskModal() { document.getElementById('task-modal').classList.remove('hidden'); }
+        function closeTaskModal() { document.getElementById('task-modal').classList.add('hidden'); document.getElementById('task-title').value = ''; document.getElementById('task-deadline').value = ''; }
+
+        // Tworzenie projektu
+        function handleCreateProject(e) {
+            e.preventDefault();
+            const name = document.getElementById('project-name').value;
+            const newProj = {
+                id: 'proj_' + Date.now(),
+                name: name,
+                tasks: []
+            };
+            data.projects.push(newProj);
+            if (!data.activeProjectId) data.activeProjectId = newProj.id;
+            closeProjectModal();
+            saveData();
+        }
+
+        // Usuwanie projektu
+        function deleteActiveProject() {
+            if (confirm('Czy na pewno chcesz usunąć ten projekt ze wszystkimi zadaniami?')) {
+                data.projects = data.projects.filter(p => p.id !== data.activeProjectId);
+                data.activeProjectId = data.projects.length > 0 ? data.projects[0].id : null;
+                saveData();
+            }
+        }
+
+        // Tworzenie zadania
+        function handleCreateTask(e) {
+            e.preventDefault();
+            const title = document.getElementById('task-title').value;
+            const deadline = document.getElementById('task-deadline').value;
+            const status = document.getElementById('task-status').value;
+
+            const proj = data.projects.find(p => p.id === data.activeProjectId);
+            if (proj) {
+                proj.tasks.push({
+                    id: 'task_' + Date.now(),
+                    title,
+                    deadline,
+                    status
+                });
+            }
+            closeTaskModal();
+            saveData();
+        }
+
+        // Zmiana statusu zadania (przyciskami)
+        function moveTask(taskId, newStatus) {
+            const proj = data.projects.find(p => p.id === data.activeProjectId);
+            if (proj) {
+                const task = proj.tasks.find(t => t.id === taskId);
+                if (task) task.status = newStatus;
+                saveData();
+            }
+        }
+
+        // Usuwanie zadania
+        function deleteTask(taskId) {
+            const proj = data.projects.find(p => p.id === data.activeProjectId);
+            if (proj) {
+                proj.tasks = proj.tasks.filter(t => t.id !== taskId);
+                saveData();
+            }
+        }
+
+        function setActiveProject(id) {
+            data.activeProjectId = id;
+            saveData();
+        }
+
+        // Renderowanie interfejsu
+        function render() {
+            const projectsListEl = document.getElementById('projects-list');
+            const projectActionsEl = document.getElementById('project-actions');
+            const activeContainerEl = document.getElementById('active-project-container');
+            const emptyStateEl = document.getElementById('empty-state');
+
+            projectsListEl.innerHTML = '';
+            projectActionsEl.innerHTML = '';
+
+            if (data.projects.length === 0) {
+                activeContainerEl.classList.add('hidden');
+                emptyStateEl.classList.remove('hidden');
+                return;
+            }
+
+            emptyStateEl.classList.add('hidden');
+            activeContainerEl.classList.remove('hidden');
+
+            // Przyciski projektów
+            data.projects.forEach(proj => {
+                const isActive = proj.id === data.activeProjectId;
+                const btn = document.createElement('button');
+                btn.className = `px-4 py-2 rounded-2xl font-medium text-sm transition-all shadow-sm ${isActive ? 'bg-pink-500 text-white shadow-pink-500/30' : 'bg-white/80 text-slate-600 hover:bg-white'}`;
+                btn.innerText = proj.name;
+                btn.onclick = () => setActiveProject(proj.id);
+                projectsListEl.appendChild(btn);
+            });
+
+            // Przycisk usuwania aktywnego projektu
+            const delProjBtn = document.createElement('button');
+            delProjBtn.className = 'text-xs text-rose-500 hover:text-rose-700 font-medium px-2 py-1';
+            delProjBtn.innerText = '🗑️ Usuń projekt';
+            delProjBtn.onclick = deleteActiveProject;
+            projectActionsEl.appendChild(delProjBtn);
+
+            // Aktywny projekt
+            const activeProj = data.projects.find(p => p.id === data.activeProjectId);
+            if (!activeProj) return;
+
+            document.getElementById('active-project-title').innerText = activeProj.name;
+
+            // Czyszczenie kolumn
+            const colTodo = document.getElementById('column-todo');
+            const colInProgress = document.getElementById('column-inprogress');
+            const colDone = document.getElementById('column-done');
+
+            colTodo.innerHTML = '';
+            colInProgress.innerHTML = '';
+            colDone.innerHTML = '';
+
+            let counts = { todo: 0, inprogress: 0, done: 0 };
+
+            activeProj.tasks.forEach(task => {
+                counts[task.status]++;
+                const card = document.createElement('div');
+                card.className = 'glass-card bg-white/70 p-4 rounded-2xl shadow-sm border border-white relative group transition-all hover:shadow-md';
+                
+                // Sprawdzanie deadline'u (czy minął)
+                const today = new Date().toISOString().split('T')[0];
+                const isOverdue = task.deadline < today && task.status !== 'done';
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start gap-2 mb-2">
+                        <span class="font-medium text-slate-800 text-sm">${escapeHtml(task.title)}</span>
+                        <button onclick="deleteTask('${task.id}')" class="text-slate-300 hover:text-rose-500 text-xs">✕</button>
+                    </div>
+                    <div class="flex justify-between items-center text-xs mt-3">
+                        <span class="${isOverdue ? 'text-rose-500 font-bold bg-rose-50 px-2 py-0.5 rounded-md' : 'text-slate-400'}">
+                            📅 ${task.deadline} ${isOverdue ? '⚠️' : ''}
+                        </span>
+                        <div class="flex gap-1">
+                            ${task.status !== 'todo' ? `<button onclick="moveTask('${task.id}', 'todo')" title="Cofnij" class="p-1 rounded hover:bg-slate-100">⬅️</button>` : ''}
+                            ${task.status !== 'inprogress' ? `<button onclick="moveTask('${task.id}', 'inprogress')" title="W trakcie" class="p-1 rounded hover:bg-slate-100">⚡</button>` : ''}
+                            ${task.status !== 'done' ? `<button onclick="moveTask('${task.id}', 'done')" title="Zrobione" class="p-1 rounded hover:bg-slate-100">✅</button>` : ''}
+                        </div>
+                    </div>
+                `;
+
+                if (task.status === 'todo') colTodo.appendChild(card);
+                else if (task.status === 'inprogress') colInProgress.appendChild(card);
+                else if (task.status === 'done') colDone.appendChild(card);
+            });
+
+            document.getElementById('count-todo').innerText = counts.todo;
+            document.getElementById('count-inprogress').innerText = counts.inprogress;
+            document.getElementById('count-done').innerText = counts.done;
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        // Start renderowania przy załadowaniu strony
+        render();
+    </script>
+</body>
+</html>
