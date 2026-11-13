@@ -86,14 +86,11 @@
                 <button onclick="openUpcomingView()" id="sidebar-upcoming-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 text-slate-600 hover:bg-amber-100/40">
                     <span>🔥 Nadchodzące deadline'y</span>
                 </button>
-                <button onclick="openAllProjectsView()" id="sidebar-all-projects-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 text-slate-600 hover:bg-amber-100/40">
-                    <span>📂 Wszystkie projekty</span>
-                </button>
             </div>
 
             <!-- Sekcja projektów celów -->
             <div class="flex justify-between items-center mb-3">
-                <span class="text-xs font-bold uppercase tracking-wider text-amber-900/50">Projekty (Cele)</span>
+                <span onclick="openProjectsOverview()" class="text-xs font-bold uppercase tracking-wider text-amber-900/60 cursor-pointer hover:text-[#e07a5f] transition-colors" title="Kliknij, aby podejrzeć wszystkie projekty">Projekty (Cele) ↗</span>
                 <button onclick="openProjectModal()" class="text-xs text-[#e07a5f] hover:text-[#d87053] font-bold bg-amber-50 hover:bg-amber-100/70 px-2.5 py-1 rounded-lg transition-colors">
                     + Nowy
                 </button>
@@ -102,7 +99,7 @@
 
             <!-- Sekcja Tablic Marzeń -->
             <div class="flex justify-between items-center mb-3">
-                <span class="text-xs font-bold uppercase tracking-wider text-amber-900/50">Tablice Marzeń</span>
+                <span onclick="openVisionBoardsOverview()" class="text-xs font-bold uppercase tracking-wider text-amber-900/60 cursor-pointer hover:text-[#e07a5f] transition-colors" title="Kliknij, aby podejrzeć wszystkie tablice marzeń">Tablice Marzeń ↗</span>
                 <button onclick="openVisionBoardModal()" class="text-xs text-[#e07a5f] hover:text-[#d87053] font-bold bg-amber-50 hover:bg-amber-100/70 px-2.5 py-1 rounded-lg transition-colors">
                     + Nowa tablica
                 </button>
@@ -129,18 +126,32 @@
             <div id="upcoming-tasks-list" class="space-y-3 max-w-3xl"></div>
         </div>
 
-        <!-- WIDOK: WSZYSTKIE PROJEKTY (Przegląd ze statusami Planned / In Progress / Completed) -->
-        <div id="all-projects-view" class="hidden">
+        <!-- WIDOK: PRZEGLĄD WSZYSTKICH PROJEKTÓW (Po kliknięciu w "Projekty (Cele)") -->
+        <div id="projects-overview-view" class="hidden">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-slate-800">📂 Przegląd wszystkich projektów</h2>
-                    <p class="text-sm text-amber-900/60 mt-1">Zarządzaj swoimi celami i kontroluj ich statusy</p>
+                    <p class="text-sm text-amber-900/60 mt-1">Statusy Twoich celów (Planned, In Progress, Completed)</p>
                 </div>
                 <button onclick="openProjectModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md">
                     + Nowy projekt
                 </button>
             </div>
-            <div id="all-projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div id="projects-overview-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </div>
+
+        <!-- WIDOK: PRZEGLĄD WSZYSTKICH TABLIC MARZEŃ (Po kliknięciu w "Tablice Marzeń") -->
+        <div id="visionboards-overview-view" class="hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">🖼️ Wszystkie Tablice Marzeń</h2>
+                    <p class="text-sm text-amber-900/60 mt-1">Podgląd kolaży inspiracji i tablic niezależnych</p>
+                </div>
+                <button onclick="openVisionBoardModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md">
+                    + Nowa tablica
+                </button>
+            </div>
+            <div id="visionboards-overview-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
         <!-- WIDOK: SWOBODNA TABLICA MARZEŃ -->
@@ -384,7 +395,6 @@
             // Automatyczne sprawdzanie i aktualizacja statusów projektów
             if (data.projects) {
                 data.projects.forEach(proj => {
-                    // Jeśli projekt ma status 'completed', nie nadpisujemy go automatycznie
                     if (proj.status === 'completed') return;
 
                     let hasStarted = false;
@@ -523,8 +533,16 @@
             saveData();
         }
 
-        function openAllProjectsView() {
-            data.currentView = 'all_projects';
+        function openProjectsOverview() {
+            data.currentView = 'projects_overview';
+            data.activeProjectId = null;
+            data.activeVisionBoardId = null;
+            data.activeMainTaskId = null;
+            saveData();
+        }
+
+        function openVisionBoardsOverview() {
+            data.currentView = 'visionboards_overview';
             data.activeProjectId = null;
             data.activeVisionBoardId = null;
             data.activeMainTaskId = null;
@@ -537,7 +555,7 @@
             const newProj = {
                 id: 'proj_' + Date.now(),
                 name: name,
-                status: 'planned', // planned, in progress, completed
+                status: 'planned',
                 mainTasks: []
             };
             data.projects.push(newProj);
@@ -640,7 +658,7 @@
             if (!proj) return;
 
             if (proj.status === 'completed') {
-                proj.status = 'planned'; // przywrócenie do planowanych/w trakcie
+                proj.status = 'planned';
             } else {
                 proj.status = 'completed';
             }
@@ -818,18 +836,17 @@
             const projectsListEl = document.getElementById('projects-list');
             const visionBoardsListEl = document.getElementById('vision-boards-list');
             const upcomingViewEl = document.getElementById('upcoming-view');
-            const allProjectsViewEl = document.getElementById('all-projects-view');
+            const projectsOverviewViewEl = document.getElementById('projects-overview-view');
+            const visionboardsOverviewViewEl = document.getElementById('visionboards-overview-view');
             const visionCanvasViewEl = document.getElementById('vision-canvas-view');
             const projectViewEl = document.getElementById('project-view');
             const taskDetailViewEl = document.getElementById('task-detail-view');
             const sidebarUpcomingBtn = document.getElementById('sidebar-upcoming-btn');
-            const sidebarAllProjectsBtn = document.getElementById('sidebar-all-projects-btn');
 
             projectsListEl.innerHTML = '';
             visionBoardsListEl.innerHTML = '';
 
-            sidebarUpcomingBtn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${data.currentView === 'upcoming' ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
-            sidebarAllProjectsBtn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 ${data.currentView === 'all_projects' ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
+            sidebarUpcomingBtn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 ${data.currentView === 'upcoming' ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
 
             if (data.projects) {
                 data.projects.forEach(proj => {
@@ -854,7 +871,8 @@
             }
 
             upcomingViewEl.classList.add('hidden');
-            allProjectsViewEl.classList.add('hidden');
+            projectsOverviewViewEl.classList.add('hidden');
+            visionboardsOverviewViewEl.classList.add('hidden');
             visionCanvasViewEl.classList.add('hidden');
             projectViewEl.classList.add('hidden');
             taskDetailViewEl.classList.add('hidden');
@@ -862,9 +880,12 @@
             if (data.currentView === 'upcoming') {
                 upcomingViewEl.classList.remove('hidden');
                 renderUpcomingView();
-            } else if (data.currentView === 'all_projects') {
-                allProjectsViewEl.classList.remove('hidden');
-                renderAllProjectsView();
+            } else if (data.currentView === 'projects_overview') {
+                projectsOverviewViewEl.classList.remove('hidden');
+                renderProjectsOverview();
+            } else if (data.currentView === 'visionboards_overview') {
+                visionboardsOverviewViewEl.classList.remove('hidden');
+                renderVisionBoardsOverview();
             } else if (data.currentView === 'vision_canvas') {
                 visionCanvasViewEl.classList.remove('hidden');
                 renderVisionCanvas();
@@ -947,14 +968,14 @@
             });
         }
 
-        function renderAllProjectsView() {
-            const gridEl = document.getElementById('all-projects-grid');
+        function renderProjectsOverview() {
+            const gridEl = document.getElementById('projects-overview-grid');
             gridEl.innerHTML = '';
 
             if (!data.projects || data.projects.length === 0) {
                 gridEl.innerHTML = `
                     <div class="glass-panel p-8 text-center rounded-2xl text-amber-900/50 text-sm col-span-full">
-                        Brak utworzonych projektów. Kliknij "+ Nowy projekt", aby zacząć!
+                        Brak utworzonych projektów. Kliknij "+ Nowy" w menu, aby zacząć!
                     </div>
                 `;
                 return;
@@ -962,7 +983,7 @@
 
             data.projects.forEach(proj => {
                 const status = proj.status || 'planned';
-                let badgeClass = 'bg-slate-200 text-slate-700';
+                let badgeClass = 'bg-amber-100 text-amber-800 font-bold';
                 let statusLabel = 'planned';
 
                 if (status === 'in progress') {
@@ -971,9 +992,6 @@
                 } else if (status === 'completed') {
                     badgeClass = 'bg-emerald-100 text-emerald-800 font-bold';
                     statusLabel = 'completed';
-                } else {
-                    badgeClass = 'bg-amber-100 text-amber-800 font-bold';
-                    statusLabel = 'planned';
                 }
 
                 const card = document.createElement('div');
@@ -993,6 +1011,46 @@
                             ${status === 'completed' ? '↩️ Przywróć do aktywnych' : '✅ Oznacz jako zakończone'}
                         </button>
                         <span class="text-xs font-bold text-[#e07a5f]">Otwórz →</span>
+                    </div>
+                `;
+                gridEl.appendChild(card);
+            });
+        }
+
+        function renderVisionBoardsOverview() {
+            const gridEl = document.getElementById('visionboards-overview-grid');
+            gridEl.innerHTML = '';
+
+            if (!data.visionBoards || data.visionBoards.length === 0) {
+                gridEl.innerHTML = `
+                    <div class="glass-panel p-8 text-center rounded-2xl text-amber-900/50 text-sm col-span-full">
+                        Brak utworzonych tablic marzeń. Kliknij "+ Nowa" w menu, aby dodać tablicę!
+                    </div>
+                `;
+                return;
+            }
+
+            data.visionBoards.forEach(board => {
+                let linkedInfo = 'Niezależna tablica marzeń';
+                if (board.projectId) {
+                    const linkedProj = data.projects.find(p => p.id === board.projectId);
+                    linkedInfo = linkedProj ? `Projekt: ${linkedProj.name}` : 'Powiązana z projektem';
+                }
+
+                const card = document.createElement('div');
+                card.className = 'glass-panel p-6 rounded-3xl border border-amber-900/10 shadow-sm flex flex-col justify-between hover:shadow-md transition-all cursor-pointer';
+                card.onclick = () => setActiveVisionBoard(board.id);
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start gap-2 mb-3">
+                            <h3 class="font-bold text-slate-800 text-lg">🖼️ ${escapeHtml(board.name)}</h3>
+                            <span class="text-xs px-2.5 py-1 rounded-full bg-amber-50 text-[#e07a5f] font-semibold border border-amber-900/10">${linkedInfo}</span>
+                        </div>
+                        <p class="text-xs text-amber-900/60 mb-4">${board.items ? board.items.length : 0} elementów/inspiracji</p>
+                    </div>
+                    <div class="flex justify-end pt-4 border-t border-amber-950/5">
+                        <span class="text-xs font-bold text-[#e07a5f]">Otwórz tablicę →</span>
                     </div>
                 `;
                 gridEl.appendChild(card);
