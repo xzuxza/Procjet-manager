@@ -25,6 +25,11 @@
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(224, 122, 95, 0.25);
         }
+        .project-tab-active {
+            background: linear-gradient(135deg, #e07a5f 0%, #d87053 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(224, 122, 95, 0.25);
+        }
         #vision-canvas-container {
             position: relative;
             width: 100%;
@@ -188,7 +193,7 @@
             <div id="visionboards-overview-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
-        <!-- WIDOK: SWOBODNA TABLICA MARZEŃ (Mega duża ze scrollowaniem i Pinteresten) -->
+        <!-- WIDOK: SWOBODNA TABLICA MARZEŃ -->
         <div id="vision-canvas-view" class="hidden">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
@@ -212,26 +217,74 @@
             </div>
         </div>
 
-        <!-- WIDOK: Lista Zadań Głównych w Projekcie -->
+        <!-- WIDOK: PROJEKT (Z zakładkami: Zadania, Baza wiedzy, Linki) -->
         <div id="project-view" class="hidden">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
+            <!-- Nagłówek projektu -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
                     <div class="flex items-center gap-2">
                         <h2 id="project-view-title" class="text-2xl font-bold text-slate-800"></h2>
                         <button onclick="editProjectName()" class="text-slate-400 hover:text-[#e07a5f] text-xs p-1" title="Edytuj nazwę projektu">✏️</button>
                     </div>
-                    <p class="text-sm text-amber-900/60 mt-1">Zadania główne projektu i ich stopień ukończenia</p>
+                    <p class="text-sm text-amber-900/60 mt-1">Centrum zarządzania tematem i wiedzą</p>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
                     <div id="project-vision-link-container"></div>
                     <button onclick="deleteActiveProject()" class="text-xs text-amber-900/40 hover:text-rose-600 transition-colors bg-white/50 px-3 py-2 rounded-xl border border-amber-950/5">🗑️ Usuń projekt</button>
+                </div>
+            </div>
+
+            <!-- Zakładki w projekcie -->
+            <div class="flex gap-2 mb-6 border-b border-amber-900/10 pb-4">
+                <button onclick="switchProjectTab('tasks')" id="tab-btn-tasks" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
+                    📋 Zadania
+                </button>
+                <button onclick="switchProjectTab('knowledge')" id="tab-btn-knowledge" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
+                    📚 Baza wiedzy
+                </button>
+                <button onclick="switchProjectTab('links')" id="tab-btn-links" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
+                    🔗 Linki i Zasoby
+                </button>
+            </div>
+
+            <!-- TREŚĆ ZAKŁADKI: ZADANIA -->
+            <div id="project-tab-tasks" class="space-y-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-slate-800 text-lg">Zadania główne projektu</h3>
                     <button onclick="openMainTaskModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
                         + Dodaj zadanie główne
                     </button>
                 </div>
+                <div id="main-tasks-list" class="space-y-4"></div>
             </div>
 
-            <div id="main-tasks-list" class="space-y-4"></div>
+            <!-- TREŚĆ ZAKŁADKI: BAZA WIEDZY -->
+            <div id="project-tab-knowledge" class="space-y-4 hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">Baza wiedzy (Dokumenty & Notatki)</h3>
+                        <p class="text-xs text-amber-900/60">Dodaj własną nazwę oraz link do pliku lub dokumentu</p>
+                    </div>
+                    <button onclick="openKnowledgeModal('knowledge')" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
+                        + Dodaj pozycję do bazy
+                    </button>
+                </div>
+                <div id="knowledge-items-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </div>
+
+            <!-- TREŚĆ ZAKŁADKI: LINKI I ZASOBY -->
+            <div id="project-tab-links" class="space-y-4 hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">Linki i Zasoby</h3>
+                        <p class="text-xs text-amber-900/60">Przydatne strony, materiały i odnośniki</p>
+                    </div>
+                    <button onclick="openKnowledgeModal('links')" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
+                        + Dodaj link
+                    </button>
+                </div>
+                <div id="links-items-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </div>
         </div>
 
         <!-- WIDOK: Szczegóły Zadania Głównego (Kanban 3 kolumny) -->
@@ -298,6 +351,28 @@
                 <div class="flex justify-end gap-2 mt-6">
                     <button type="button" onclick="closeProjectModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
                     <button type="submit" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-md">Utwórz</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal dodawania do bazy wiedzy / linków -->
+    <div id="knowledge-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
+        <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
+            <h3 id="knowledge-modal-title" class="text-lg font-bold text-slate-800 mb-4">Dodaj do bazy wiedzy</h3>
+            <form onsubmit="handleSaveKnowledge(event)">
+                <input type="hidden" id="knowledge-type-input">
+                <div class="mb-4">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Nazwa (tytuł)</label>
+                    <input type="text" id="knowledge-title" required autocomplete="off" placeholder="np. Regulamin / Dokument PDF" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-900/50 mb-2">Link (URL do pliku / strony)</label>
+                    <input type="url" id="knowledge-url" required autocomplete="off" placeholder="https://..." class="w-full px-3.5 py-2.5 rounded-xl border border-amber-900/10 text-sm focus:outline-none focus:ring-2 focus:ring-[#e07a5f] bg-white/60">
+                </div>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="button" onclick="closeKnowledgeModal()" class="px-4 py-2 text-slate-500 hover:text-slate-800 text-sm font-medium">Anuluj</button>
+                    <button type="submit" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-md">Dodaj</button>
                 </div>
             </form>
         </div>
@@ -451,6 +526,60 @@
         function openProjectModal() { document.getElementById('project-modal').classList.remove('hidden'); }
         function closeProjectModal() { document.getElementById('project-modal').classList.add('hidden'); document.getElementById('project-name').value = ''; }
 
+        function openKnowledgeModal(type) {
+            document.getElementById('knowledge-type-input').value = type;
+            document.getElementById('knowledge-modal-title').innerText = type === 'knowledge' ? 'Dodaj do bazy wiedzy' : 'Dodaj link / zasób';
+            document.getElementById('knowledge-title').value = '';
+            document.getElementById('knowledge-url').value = '';
+            document.getElementById('knowledge-modal').classList.remove('hidden');
+        }
+
+        function closeKnowledgeModal() {
+            document.getElementById('knowledge-modal').classList.add('hidden');
+        }
+
+        function handleSaveKnowledge(e) {
+            e.preventDefault();
+            const type = document.getElementById('knowledge-type-input').value;
+            const title = document.getElementById('knowledge-title').value;
+            const url = document.getElementById('knowledge-url').value;
+
+            const proj = data.projects.find(p => p.id === data.activeProjectId);
+            if (!proj) return;
+
+            if (type === 'knowledge') {
+                if (!proj.knowledgeBase) proj.knowledgeBase = [];
+                proj.knowledgeBase.push({ id: 'item_' + Date.now(), title, url });
+            } else if (type === 'links') {
+                if (!proj.links) proj.links = [];
+                proj.links.push({ id: 'item_' + Date.now(), title, url });
+            }
+
+            closeKnowledgeModal();
+            saveData();
+        }
+
+        function deleteKnowledgeItem(type, itemId) {
+            if (confirm('Usunąć tę pozycję?')) {
+                const proj = data.projects.find(p => p.id === data.activeProjectId);
+                if (!proj) return;
+
+                if (type === 'knowledge') {
+                    proj.knowledgeBase = proj.knowledgeBase.filter(i => i.id !== itemId);
+                } else if (type === 'links') {
+                    proj.links = proj.links.filter(i => i.id !== itemId);
+                }
+                saveData();
+            }
+        }
+
+        function switchProjectTab(tabName) {
+            const proj = data.projects.find(p => p.id === data.activeProjectId);
+            if (!proj) return;
+            proj.activeTab = tabName;
+            saveData();
+        }
+
         function openVisionBoardModal() {
             const selectEl = document.getElementById('visionboard-project-select');
             selectEl.innerHTML = '<option value="">✨ Tablica niezależna (ogólna)</option>';
@@ -578,7 +707,10 @@
                 id: 'proj_' + Date.now(),
                 name: name,
                 status: 'planned',
-                mainTasks: []
+                activeTab: 'tasks',
+                mainTasks: [],
+                knowledgeBase: [],
+                links: []
             };
             data.projects.push(newProj);
             setActiveProject(newProj.id);
@@ -593,7 +725,10 @@
                 id: 'proj_' + Date.now(),
                 name: board.name,
                 status: 'planned',
-                mainTasks: []
+                activeTab: 'tasks',
+                mainTasks: [],
+                knowledgeBase: [],
+                links: []
             };
             data.projects.push(newProj);
             board.projectId = newProj.id;
@@ -675,6 +810,10 @@
             data.activeVisionBoardId = null;
             data.currentView = 'project';
             data.activeMainTaskId = null;
+            const proj = data.projects.find(p => p.id === id);
+            if (proj && !proj.activeTab) proj.activeTab = 'tasks';
+            if (proj && !proj.knowledgeBase) proj.knowledgeBase = [];
+            if (proj && !proj.links) proj.links = [];
             saveData();
         }
 
@@ -753,7 +892,7 @@
         }
 
         function deleteActiveProject() {
-            if (confirm('Usunąć ten projekt ze wszystkimi zadaniami?')) {
+            if (confirm('Usunąć ten projekt ze wszystkimi zadaniami i bazą wiedzy?')) {
                 data.projects = data.projects.filter(p => p.id !== data.activeProjectId);
                 openUpcomingView();
             }
@@ -1097,7 +1236,6 @@
             actionsContainer.innerHTML = '';
             pinterestContainer.innerHTML = '';
 
-            // Obsługa przycisku Pinteresta w nagłówku tablicy
             const pinterestBtn = document.createElement('button');
             pinterestBtn.className = 'text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold px-3.5 py-2 rounded-xl transition-all border border-rose-900/10 shadow-2xs flex items-center gap-1.5';
             
@@ -1110,7 +1248,6 @@
             }
             pinterestContainer.appendChild(pinterestBtn);
 
-            // Jeśli jest przypięty link, dajemy też mały przycisk edycji obok
             if (board.pinterestUrl && board.pinterestUrl.trim() !== '') {
                 const editPinBtn = document.createElement('button');
                 editPinBtn.className = 'text-xs bg-white/70 hover:bg-white text-slate-500 hover:text-rose-600 px-2.5 py-2 rounded-xl border border-amber-900/10 transition-all';
@@ -1255,6 +1392,37 @@
                 linkContainer.appendChild(btnBoard);
             }
 
+            // Obsługa zakładek w projekcie
+            const activeTab = activeProj.activeTab || 'tasks';
+            const tabBtnTasks = document.getElementById('tab-btn-tasks');
+            const tabBtnKnowledge = document.getElementById('tab-btn-knowledge');
+            const tabBtnLinks = document.getElementById('tab-btn-links');
+
+            const contentTasks = document.getElementById('project-tab-tasks');
+            const contentKnowledge = document.getElementById('project-tab-knowledge');
+            const contentLinks = document.getElementById('project-tab-links');
+
+            tabBtnTasks.className = `px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${activeTab === 'tasks' ? 'project-tab-active' : 'text-slate-600 bg-white/50 hover:bg-amber-100/40 border border-amber-900/10'}`;
+            tabBtnKnowledge.className = `px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${activeTab === 'knowledge' ? 'project-tab-active' : 'text-slate-600 bg-white/50 hover:bg-amber-100/40 border border-amber-900/10'}`;
+            tabBtnLinks.className = `px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${activeTab === 'links' ? 'project-tab-active' : 'text-slate-600 bg-white/50 hover:bg-amber-100/40 border border-amber-900/10'}`;
+
+            contentTasks.classList.add('hidden');
+            contentKnowledge.classList.add('hidden');
+            contentLinks.classList.add('hidden');
+
+            if (activeTab === 'tasks') {
+                contentTasks.classList.remove('hidden');
+                renderMainTasksList(activeProj);
+            } else if (activeTab === 'knowledge') {
+                contentKnowledge.classList.remove('hidden');
+                renderKnowledgeList('knowledge', activeProj.knowledgeBase || []);
+            } else if (activeTab === 'links') {
+                contentLinks.classList.remove('hidden');
+                renderKnowledgeList('links', activeProj.links || []);
+            }
+        }
+
+        function renderMainTasksList(activeProj) {
             const mainTasksListEl = document.getElementById('main-tasks-list');
             mainTasksListEl.innerHTML = '';
 
@@ -1294,6 +1462,41 @@
                     mainTasksListEl.appendChild(card);
                 });
             }
+        }
+
+        function renderKnowledgeList(type, items) {
+            const listEl = document.getElementById(type === 'knowledge' ? 'knowledge-items-list' : 'links-items-list');
+            listEl.innerHTML = '';
+
+            if (!items || items.length === 0) {
+                listEl.innerHTML = `
+                    <div class="glass-panel p-8 text-center rounded-2xl text-amber-900/50 text-sm col-span-full">
+                        Brak elementów w tej sekcji. Kliknij przycisk dodawania powyżej!
+                    </div>
+                `;
+                return;
+            }
+
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'glass-panel bg-white/90 p-5 rounded-2xl border border-amber-900/10 shadow-xs flex flex-col justify-between hover:shadow-md transition-all';
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start gap-2 mb-3">
+                            <h4 class="font-bold text-slate-800 text-base break-all">📄 ${escapeHtml(item.title)}</h4>
+                            <button onclick="deleteKnowledgeItem('${type}', '${item.id}')" class="text-slate-300 hover:text-rose-600 text-xs font-bold" title="Usuń">✕</button>
+                        </div>
+                        <p class="text-xs text-amber-900/50 truncate mb-4">${escapeHtml(item.url)}</p>
+                    </div>
+                    <div class="pt-3 border-t border-amber-950/5 flex justify-end">
+                        <a href="${escapeHtml(item.url)}" target="_blank" class="text-xs font-bold bg-amber-50 hover:bg-amber-100 text-[#e07a5f] px-3 py-1.5 rounded-xl border border-amber-900/10 transition-all flex items-center gap-1">
+                            Otwórz link ↗
+                        </a>
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
         }
 
         function renderTaskDetailView() {
