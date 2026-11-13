@@ -188,7 +188,7 @@
             <div id="visionboards-overview-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
-        <!-- WIDOK: SWOBODNA TABLICA MARZEŃ (Mega duża ze scrollowaniem) -->
+        <!-- WIDOK: SWOBODNA TABLICA MARZEŃ (Mega duża ze scrollowaniem i Pinteresten) -->
         <div id="vision-canvas-view" class="hidden">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
@@ -199,6 +199,7 @@
                     <p id="vision-board-subtitle" class="text-sm text-amber-900/60 mt-1"></p>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
+                    <div id="vision-pinterest-link-container"></div>
                     <div id="vision-board-actions-container"></div>
                     <button onclick="deleteActiveVisionBoard()" class="text-xs text-amber-900/40 hover:text-rose-600 transition-colors bg-white/50 px-3 py-2 rounded-xl border border-amber-950/5">🗑️ Usuń tablicę</button>
                     <button onclick="openAddImageModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] hover:from-[#d87053] hover:to-[#e7934f] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md shadow-amber-900/10 transition-all">
@@ -233,7 +234,7 @@
             <div id="main-tasks-list" class="space-y-4"></div>
         </div>
 
-        <!-- WIDOK: Szczegóły Zadania Głównego (Kanban 3 kolumny: Do podjęcia, W trakcie, Zrobione) -->
+        <!-- WIDOK: Szczegóły Zadania Głównego (Kanban 3 kolumny) -->
         <div id="task-detail-view" class="hidden">
             <div class="flex items-center gap-3 mb-6">
                 <button onclick="backToProjectView()" class="glass-panel px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-white transition-all shadow-xs flex items-center gap-1">
@@ -428,7 +429,6 @@
                     proj.mainTasks.forEach(mt => {
                         if (mt.subtasks) {
                             mt.subtasks.forEach(sub => {
-                                // Automatyczne wykrycie rozpoczęcia projektu (status todo, inprogress lub done)
                                 if (sub.status === 'todo' || sub.status === 'inprogress' || sub.status === 'done') {
                                     hasStarted = true;
                                 }
@@ -609,12 +609,24 @@
                 id: 'board_' + Date.now(),
                 name: name,
                 projectId: linkedProjectId || null,
+                pinterestUrl: '',
                 items: []
             };
             if (!data.visionBoards) data.visionBoards = [];
             data.visionBoards.push(newBoard);
             setActiveVisionBoard(newBoard.id);
             closeVisionBoardModal();
+        }
+
+        function editPinterestUrl() {
+            const board = data.visionBoards.find(b => b.id === data.activeVisionBoardId);
+            if (!board) return;
+            const currentUrl = board.pinterestUrl || '';
+            const newUrl = prompt('Wklej link do tablicy na Pintereście:', currentUrl);
+            if (newUrl !== null) {
+                board.pinterestUrl = newUrl.trim();
+                saveData();
+            }
         }
 
         function handleAddImage(e) {
@@ -779,7 +791,6 @@
             e.preventDefault();
             const title = document.getElementById('subtask-title').value;
             const deadline = document.getElementById('subtask-deadline').value;
-            // Nowo dodawane zadanie od razu trafia do "todo" (Do podjęcia)
             let status = 'todo';
 
             const proj = data.projects.find(p => p.id === data.activeProjectId);
@@ -1081,7 +1092,33 @@
             document.getElementById('vision-board-title').innerText = board.name;
             const subtitleEl = document.getElementById('vision-board-subtitle');
             const actionsContainer = document.getElementById('vision-board-actions-container');
+            const pinterestContainer = document.getElementById('vision-pinterest-link-container');
+            
             actionsContainer.innerHTML = '';
+            pinterestContainer.innerHTML = '';
+
+            // Obsługa przycisku Pinteresta w nagłówku tablicy
+            const pinterestBtn = document.createElement('button');
+            pinterestBtn.className = 'text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold px-3.5 py-2 rounded-xl transition-all border border-rose-900/10 shadow-2xs flex items-center gap-1.5';
+            
+            if (board.pinterestUrl && board.pinterestUrl.trim() !== '') {
+                pinterestBtn.innerHTML = `📌 Otwórz Pinteresta`;
+                pinterestBtn.onclick = () => window.open(board.pinterestUrl, '_blank');
+            } else {
+                pinterestBtn.innerHTML = `🔗 Dodaj link do Pinteresta`;
+                pinterestBtn.onclick = () => editPinterestUrl();
+            }
+            pinterestContainer.appendChild(pinterestBtn);
+
+            // Jeśli jest przypięty link, dajemy też mały przycisk edycji obok
+            if (board.pinterestUrl && board.pinterestUrl.trim() !== '') {
+                const editPinBtn = document.createElement('button');
+                editPinBtn.className = 'text-xs bg-white/70 hover:bg-white text-slate-500 hover:text-rose-600 px-2.5 py-2 rounded-xl border border-amber-900/10 transition-all';
+                editPinBtn.innerHTML = '✏️ Link';
+                editPinBtn.title = 'Edytuj link do Pinteresta';
+                editPinBtn.onclick = () => editPinterestUrl();
+                pinterestContainer.appendChild(editPinBtn);
+            }
             
             if (board.projectId) {
                 const linkedProj = data.projects.find(p => p.id === board.projectId);
@@ -1283,7 +1320,6 @@
             const subtasks = mainTask.subtasks || [];
 
             subtasks.forEach(sub => {
-                // Jeśli jakimś cudem zadanie miało stary status 'pool', mapujemy je na 'todo'
                 if (sub.status === 'pool') sub.status = 'todo';
 
                 counts[sub.status] = (counts[sub.status] || 0) + 1;
