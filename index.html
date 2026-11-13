@@ -32,13 +32,13 @@
             background: rgba(255, 255, 255, 0.5);
             border: 2px dashed rgba(224, 122, 95, 0.3);
             border-radius: 2rem;
-            overflow: auto; /* Pozwala na scrollowanie tablicy w dół i na boki */
+            overflow: auto;
             box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
         }
         #vision-canvas {
             position: relative;
-            width: 3000px;  /* Mega duża szerokość */
-            height: 2500px; /* Mega duża wysokość do scrollowania */
+            width: 3000px;
+            height: 2500px;
         }
         .vision-item {
             position: absolute;
@@ -233,7 +233,7 @@
             <div id="main-tasks-list" class="space-y-4"></div>
         </div>
 
-        <!-- WIDOK: Szczegóły Zadania Głównego (Kanban 4 kolumny) -->
+        <!-- WIDOK: Szczegóły Zadania Głównego (Kanban 3 kolumny: Do podjęcia, W trakcie, Zrobione) -->
         <div id="task-detail-view" class="hidden">
             <div class="flex items-center gap-3 mb-6">
                 <button onclick="backToProjectView()" class="glass-panel px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-white transition-all shadow-xs flex items-center gap-1">
@@ -255,16 +255,8 @@
                 </button>
             </div>
 
-            <!-- Tablica Kanban (4 kolumny) -->
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <div class="glass-panel rounded-2xl p-4 border-t-4 border-slate-400 shadow-sm">
-                    <div class="flex justify-between items-center mb-4 px-1">
-                        <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">📁 Pula</h3>
-                        <span id="count-pool" class="bg-slate-200 text-slate-800 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
-                    </div>
-                    <div id="column-pool" class="space-y-4 min-h-[300px]"></div>
-                </div>
-
+            <!-- Tablica Kanban (3 kolumny) -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="glass-panel rounded-2xl p-4 border-t-4 border-amber-400 shadow-sm">
                     <div class="flex justify-between items-center mb-4 px-1">
                         <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">🎯 Do podjęcia</h3>
@@ -436,6 +428,7 @@
                     proj.mainTasks.forEach(mt => {
                         if (mt.subtasks) {
                             mt.subtasks.forEach(sub => {
+                                // Automatyczne wykrycie rozpoczęcia projektu (status todo, inprogress lub done)
                                 if (sub.status === 'todo' || sub.status === 'inprogress' || sub.status === 'done') {
                                     hasStarted = true;
                                 }
@@ -540,12 +533,6 @@
                     const sub = mt.subtasks.find(s => s.id === deadlineTarget.id);
                     if (sub) {
                         sub.deadline = newDate;
-                        if (!newDate && sub.status === 'todo') {
-                            sub.status = 'pool';
-                        }
-                        if (newDate && sub.status === 'pool') {
-                            sub.status = 'todo';
-                        }
                         saveData();
                     }
                 }
@@ -792,7 +779,8 @@
             e.preventDefault();
             const title = document.getElementById('subtask-title').value;
             const deadline = document.getElementById('subtask-deadline').value;
-            let status = deadline ? 'todo' : 'pool';
+            // Nowo dodawane zadanie od razu trafia do "todo" (Do podjęcia)
+            let status = 'todo';
 
             const proj = data.projects.find(p => p.id === data.activeProjectId);
             if (proj) {
@@ -819,10 +807,6 @@
                 if (mainTask) {
                     const sub = mainTask.subtasks.find(s => s.id === subtaskId);
                     if (sub) {
-                        if (newStatus === 'todo' && !sub.deadline) {
-                            alert('Aby przenieść zadanie do "Do podjęcia", najpierw dodaj mu deadline!');
-                            return;
-                        }
                         sub.status = newStatus;
                         saveData();
                     }
@@ -1287,21 +1271,22 @@
             const deadlineInfo = document.getElementById('detail-task-deadline-info');
             deadlineInfo.innerText = mainTask.deadline ? `📅 Deadline zadania głównego: ${mainTask.deadline}` : `⏳ Brak deadline'u zadania głównego`;
 
-            const colPool = document.getElementById('column-pool');
             const colTodo = document.getElementById('column-todo');
             const colInProgress = document.getElementById('column-inprogress');
             const colDone = document.getElementById('column-done');
 
-            colPool.innerHTML = '';
             colTodo.innerHTML = '';
             colInProgress.innerHTML = '';
             colDone.innerHTML = '';
 
-            let counts = { pool: 0, todo: 0, inprogress: 0, done: 0 };
+            let counts = { todo: 0, inprogress: 0, done: 0 };
             const subtasks = mainTask.subtasks || [];
 
             subtasks.forEach(sub => {
-                counts[sub.status]++;
+                // Jeśli jakimś cudem zadanie miało stary status 'pool', mapujemy je na 'todo'
+                if (sub.status === 'pool') sub.status = 'todo';
+
+                counts[sub.status] = (counts[sub.status] || 0) + 1;
                 const card = document.createElement('div');
                 card.className = 'glass-panel bg-white/90 p-4 rounded-2xl border border-amber-900/10 shadow-xs relative transition-all hover:shadow-md';
                 
@@ -1330,21 +1315,18 @@
                             <button onclick="openDeadlineModal('subtask', '${sub.id}', '${sub.deadline || ''}')" class="text-slate-400 hover:text-[#e07a5f] text-[10px] bg-amber-50 px-1.5 py-0.5 rounded border border-amber-900/10" title="Edytuj deadline">📅 zmień</button>
                         </div>
                         <div class="flex gap-1">
-                            ${sub.status !== 'pool' ? `<button onclick="moveSubtask('${sub.id}', 'pool')" title="Pula" class="px-1.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[10px] font-semibold text-slate-700">📁</button>` : ''}
-                            ${sub.status !== 'todo' ? `<button onclick="moveSubtask('${sub.id}', 'todo')" title="Do podjęcia" class="px-1.5 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[10px] font-semibold text-amber-800">🎯</button>` : ''}
-                            ${sub.status !== 'inprogress' ? `<button onclick="moveSubtask('${sub.id}', 'inprogress')" title="W trakcie" class="px-1.5 py-1 rounded bg-orange-50 hover:bg-orange-100 text-[10px] font-semibold text-orange-800">⚡</button>` : ''}
-                            ${sub.status !== 'done' ? `<button onclick="moveSubtask('${sub.id}', 'done')" title="Zrobione" class="px-1.5 py-1 rounded bg-emerald-50 hover:bg-emerald-100 text-[10px] font-semibold text-emerald-800">✅</button>` : ''}
+                            ${sub.status !== 'todo' ? `<button onclick="moveSubtask('${sub.id}', 'todo')" title="Do podjęcia" class="px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[10px] font-semibold text-amber-800">🎯</button>` : ''}
+                            ${sub.status !== 'inprogress' ? `<button onclick="moveSubtask('${sub.id}', 'inprogress')" title="W trakcie" class="px-2 py-1 rounded bg-orange-50 hover:bg-orange-100 text-[10px] font-semibold text-orange-800">⚡</button>` : ''}
+                            ${sub.status !== 'done' ? `<button onclick="moveSubtask('${sub.id}', 'done')" title="Zrobione" class="px-2 py-1 rounded bg-emerald-50 hover:bg-emerald-100 text-[10px] font-semibold text-emerald-800">✅</button>` : ''}
                         </div>
                     </div>
                 `;
 
-                if (sub.status === 'pool') colPool.appendChild(card);
-                else if (sub.status === 'todo') colTodo.appendChild(card);
+                if (sub.status === 'todo') colTodo.appendChild(card);
                 else if (sub.status === 'inprogress') colInProgress.appendChild(card);
                 else if (sub.status === 'done') colDone.appendChild(card);
             });
 
-            document.getElementById('count-pool').innerText = counts.pool;
             document.getElementById('count-todo').innerText = counts.todo;
             document.getElementById('count-inprogress').innerText = counts.inprogress;
             document.getElementById('count-done').innerText = counts.done;
