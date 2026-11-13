@@ -265,7 +265,6 @@
         </div>
     </div>
 
-    <!-- Modal: Nowa Tablica Marzeń z automatyczną nazwą projektu -->
     <div id="visionboard-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
         <div class="glass-panel bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-xl border border-amber-900/10">
             <h3 class="text-lg font-bold text-slate-800 mb-4">Nowa Tablica Marzeń</h3>
@@ -349,9 +348,11 @@
         </div>
     </div>
 
-    <!-- Skrypt aplikacji -->
+    <!-- Skrypt aplikacji ze stałym kluczem pamięci localStorage -->
     <script>
-        let data = JSON.parse(localStorage.getItem('pro_workspace_data_v14')) || {
+        const STORAGE_KEY = 'pro_workspace_master_data';
+
+        let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
             projects: [],
             visionBoards: [],
             activeProjectId: null,
@@ -363,7 +364,7 @@
         let deadlineTarget = { type: null, id: null };
 
         function saveData() {
-            localStorage.setItem('pro_workspace_data_v14', JSON.stringify(data));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
             render();
         }
 
@@ -493,7 +494,6 @@
             closeProjectModal();
         }
 
-        // Funkcja tworzenia projektu bezpośrednio z niezależnej tablicy marzeń
         function createProjectFromVisionBoard(boardId) {
             const board = data.visionBoards.find(b => b.id === boardId);
             if (!board) return;
@@ -504,8 +504,6 @@
                 mainTasks: []
             };
             data.projects.push(newProj);
-            
-            // Powiąż tablicę z nowo utworzonym projektem
             board.projectId = newProj.id;
             setActiveProject(newProj.id);
         }
@@ -733,7 +731,7 @@
                     const sub = mainTask.subtasks.find(s => s.id === subtaskId);
                     if (sub) {
                         sub.notes = notes;
-                        localStorage.setItem('pro_workspace_data_v14', JSON.stringify(data));
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
                     }
                 }
             }
@@ -965,7 +963,7 @@
                     isDragging = false;
                     itemDiv.releasePointerCapture(e.pointerId);
                     itemDiv.style.zIndex = 1;
-                    localStorage.setItem('pro_workspace_data_v14', JSON.stringify(data));
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
                 });
 
                 const handleEl = itemDiv.querySelector('.resize-handle');
@@ -996,7 +994,7 @@
                     isResizing = false;
                     handleEl.releasePointerCapture(e.pointerId);
                     itemDiv.style.zIndex = 1;
-                    localStorage.setItem('pro_workspace_data_v14', JSON.stringify(data));
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
                 });
 
                 canvasEl.appendChild(itemDiv);
@@ -1012,7 +1010,6 @@
 
             document.getElementById('project-view-title').innerText = activeProj.name;
             
-            // Link do tablicy marzeń w nagłówku projektu
             const linkContainer = document.getElementById('project-vision-link-container');
             linkContainer.innerHTML = '';
             
