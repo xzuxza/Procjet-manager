@@ -25,15 +25,20 @@
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(224, 122, 95, 0.25);
         }
-        #vision-canvas {
+        #vision-canvas-container {
             position: relative;
             width: 100%;
             height: 75vh;
             background: rgba(255, 255, 255, 0.5);
             border: 2px dashed rgba(224, 122, 95, 0.3);
             border-radius: 2rem;
-            overflow: hidden;
+            overflow: auto; /* Pozwala na scrollowanie tablicy w dół i na boki */
             box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+        }
+        #vision-canvas {
+            position: relative;
+            width: 3000px;  /* Mega duża szerokość */
+            height: 2500px; /* Mega duża wysokość do scrollowania */
         }
         .vision-item {
             position: absolute;
@@ -90,7 +95,7 @@
 
             <!-- Sekcja projektów celów -->
             <div class="flex justify-between items-center mb-3">
-                <span onclick="openProjectsOverview()" class="text-xs font-bold uppercase tracking-wider text-amber-900/60 cursor-pointer hover:text-[#e07a5f] transition-colors" title="Kliknij, aby podejrzeć wszystkie projekty">Projekty (Cele) ↗</span>
+                <span onclick="openProjectsOverview()" class="text-xs font-bold uppercase tracking-wider text-amber-900/60 cursor-pointer hover:text-[#e07a5f] transition-colors" title="Kliknij, aby podejrzeć wszystkie projekty w kolumnach">Projekty (Cele) ↗</span>
                 <button onclick="openProjectModal()" class="text-xs text-[#e07a5f] hover:text-[#d87053] font-bold bg-amber-50 hover:bg-amber-100/70 px-2.5 py-1 rounded-lg transition-colors">
                     + Nowy
                 </button>
@@ -126,21 +131,50 @@
             <div id="upcoming-tasks-list" class="space-y-3 max-w-3xl"></div>
         </div>
 
-        <!-- WIDOK: PRZEGLĄD WSZYSTKICH PROJEKTÓW (Po kliknięciu w "Projekty (Cele)") -->
+        <!-- WIDOK: PRZEGLĄD PROJEKTÓW W 3 KOLUMNACH (Planned | In Progress | Completed) -->
         <div id="projects-overview-view" class="hidden">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
-                    <h2 class="text-2xl font-bold text-slate-800">📂 Przegląd wszystkich projektów</h2>
-                    <p class="text-sm text-amber-900/60 mt-1">Statusy Twoich celów (Planned, In Progress, Completed)</p>
+                    <h2 class="text-2xl font-bold text-slate-800">📂 Przegląd projektów</h2>
+                    <p class="text-sm text-amber-900/60 mt-1">Statusy Twoich celów podzielone na kolumny</p>
                 </div>
                 <button onclick="openProjectModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md">
                     + Nowy projekt
                 </button>
             </div>
-            <div id="projects-overview-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+            <!-- Układ 3 kolumn -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Kolumna 1: Planned -->
+                <div class="glass-panel rounded-2xl p-4 border-t-4 border-amber-400 shadow-sm flex flex-col">
+                    <div class="flex justify-between items-center mb-4 px-1">
+                        <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">📌 Planned</h3>
+                        <span id="count-planned" class="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
+                    </div>
+                    <div id="column-planned" class="space-y-4 min-h-[300px] flex-1"></div>
+                </div>
+
+                <!-- Kolumna 2: In Progress -->
+                <div class="glass-panel rounded-2xl p-4 border-t-4 border-orange-400 shadow-sm flex flex-col">
+                    <div class="flex justify-between items-center mb-4 px-1">
+                        <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">⚡ In Progress</h3>
+                        <span id="count-inprogress-proj" class="bg-orange-100 text-orange-800 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
+                    </div>
+                    <div id="column-inprogress-proj" class="space-y-4 min-h-[300px] flex-1"></div>
+                </div>
+
+                <!-- Kolumna 3: Completed -->
+                <div class="glass-panel rounded-2xl p-4 border-t-4 border-emerald-400 shadow-sm flex flex-col">
+                    <div class="flex justify-between items-center mb-4 px-1">
+                        <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">✨ Completed</h3>
+                        <span id="count-completed" class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
+                    </div>
+                    <div id="column-completed" class="space-y-4 min-h-[300px] flex-1"></div>
+                </div>
+            </div>
         </div>
 
-        <!-- WIDOK: PRZEGLĄD WSZYSTKICH TABLIC MARZEŃ (Po kliknięciu w "Tablice Marzeń") -->
+        <!-- WIDOK: PRZEGLĄD WSZYSTKICH TABLIC MARZEŃ -->
         <div id="visionboards-overview-view" class="hidden">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
@@ -154,7 +188,7 @@
             <div id="visionboards-overview-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
-        <!-- WIDOK: SWOBODNA TABLICA MARZEŃ -->
+        <!-- WIDOK: SWOBODNA TABLICA MARZEŃ (Mega duża ze scrollowaniem) -->
         <div id="vision-canvas-view" class="hidden">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
@@ -172,7 +206,9 @@
                     </button>
                 </div>
             </div>
-            <div id="vision-canvas"></div>
+            <div id="vision-canvas-container">
+                <div id="vision-canvas"></div>
+            </div>
         </div>
 
         <!-- WIDOK: Lista Zadań Głównych w Projekcie -->
@@ -392,7 +428,6 @@
         let deadlineTarget = { type: null, id: null };
 
         function saveData() {
-            // Automatyczne sprawdzanie i aktualizacja statusów projektów
             if (data.projects) {
                 data.projects.forEach(proj => {
                     if (proj.status === 'completed') return;
@@ -618,9 +653,9 @@
                 board.items.push({
                     id: 'img_' + Date.now(),
                     url: imgSrc,
-                    x: 50 + (board.items.length * 20) % 200,
-                    y: 50 + (board.items.length * 20) % 150,
-                    width: 220
+                    x: 100 + (board.items.length * 40) % 1500,
+                    y: 100 + (board.items.length * 40) % 1000,
+                    width: 250
                 });
                 closeAddImageModal();
                 saveData();
@@ -969,52 +1004,47 @@
         }
 
         function renderProjectsOverview() {
-            const gridEl = document.getElementById('projects-overview-grid');
-            gridEl.innerHTML = '';
+            const colPlanned = document.getElementById('column-planned');
+            const colInProgress = document.getElementById('column-inprogress-proj');
+            const colCompleted = document.getElementById('column-completed');
 
-            if (!data.projects || data.projects.length === 0) {
-                gridEl.innerHTML = `
-                    <div class="glass-panel p-8 text-center rounded-2xl text-amber-900/50 text-sm col-span-full">
-                        Brak utworzonych projektów. Kliknij "+ Nowy" w menu, aby zacząć!
-                    </div>
-                `;
-                return;
+            colPlanned.innerHTML = '';
+            colInProgress.innerHTML = '';
+            colCompleted.innerHTML = '';
+
+            let counts = { planned: 0, 'in progress': 0, completed: 0 };
+
+            if (data.projects) {
+                data.projects.forEach(proj => {
+                    const status = proj.status || 'planned';
+                    counts[status] = (counts[status] || 0) + 1;
+
+                    const card = document.createElement('div');
+                    card.className = 'glass-panel bg-white/90 p-4 rounded-2xl border border-amber-900/10 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between';
+                    card.onclick = () => setActiveProject(proj.id);
+
+                    card.innerHTML = `
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-base mb-2">${escapeHtml(proj.name)}</h4>
+                            <p class="text-xs text-amber-900/60 mb-3">${proj.mainTasks.length} zadań głównych</p>
+                        </div>
+                        <div class="flex justify-between items-center pt-3 border-t border-amber-950/5">
+                            <button onclick="toggleProjectCompletion('${proj.id}', event)" class="text-[11px] font-semibold px-2.5 py-1 rounded-xl border border-amber-900/10 bg-white/70 hover:bg-white text-slate-700 transition-all">
+                                ${status === 'completed' ? '↩️ Przywróć' : '✅ Zakończ'}
+                            </button>
+                            <span class="text-xs font-bold text-[#e07a5f]">Otwórz →</span>
+                        </div>
+                    `;
+
+                    if (status === 'planned') colPlanned.appendChild(card);
+                    else if (status === 'in progress') colInProgress.appendChild(card);
+                    else if (status === 'completed') colCompleted.appendChild(card);
+                });
             }
 
-            data.projects.forEach(proj => {
-                const status = proj.status || 'planned';
-                let badgeClass = 'bg-amber-100 text-amber-800 font-bold';
-                let statusLabel = 'planned';
-
-                if (status === 'in progress') {
-                    badgeClass = 'bg-orange-100 text-orange-800 font-bold';
-                    statusLabel = 'in progress';
-                } else if (status === 'completed') {
-                    badgeClass = 'bg-emerald-100 text-emerald-800 font-bold';
-                    statusLabel = 'completed';
-                }
-
-                const card = document.createElement('div');
-                card.className = 'glass-panel p-6 rounded-3xl border border-amber-900/10 shadow-sm flex flex-col justify-between hover:shadow-md transition-all cursor-pointer';
-                card.onclick = () => setActiveProject(proj.id);
-
-                card.innerHTML = `
-                    <div>
-                        <div class="flex justify-between items-start gap-2 mb-3">
-                            <h3 class="font-bold text-slate-800 text-lg">${escapeHtml(proj.name)}</h3>
-                            <span class="text-xs px-2.5 py-1 rounded-full uppercase tracking-wider ${badgeClass}">${statusLabel}</span>
-                        </div>
-                        <p class="text-xs text-amber-900/60 mb-4">${proj.mainTasks.length} zadań głównych</p>
-                    </div>
-                    <div class="flex justify-between items-center pt-4 border-t border-amber-950/5">
-                        <button onclick="toggleProjectCompletion('${proj.id}', event)" class="text-xs font-semibold px-3 py-1.5 rounded-xl border border-amber-900/10 bg-white/70 hover:bg-white text-slate-700 transition-all">
-                            ${status === 'completed' ? '↩️ Przywróć do aktywnych' : '✅ Oznacz jako zakończone'}
-                        </button>
-                        <span class="text-xs font-bold text-[#e07a5f]">Otwórz →</span>
-                    </div>
-                `;
-                gridEl.appendChild(card);
-            });
+            document.getElementById('count-planned').innerText = counts['planned'];
+            document.getElementById('count-inprogress-proj').innerText = counts['in progress'];
+            document.getElementById('count-completed').innerText = counts['completed'];
         }
 
         function renderVisionBoardsOverview() {
@@ -1095,8 +1125,8 @@
 
             if (!board.items || board.items.length === 0) {
                 canvasEl.innerHTML = `
-                    <div class="absolute inset-0 flex flex-col items-center justify-center text-amber-900/50 text-sm p-4 text-center">
-                        Ta tablica marzeń jest pusta. Kliknij "+ Dodaj inspirację", aby dodać pierwsze zdjęcia lub pliki!
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-amber-900/50 text-sm p-4 text-center pointer-events-none">
+                        Ta tablica marzeń jest ogromna. Kliknij "+ Dodaj inspirację", aby umieścić pierwsze zdjęcia!
                     </div>
                 `;
                 return;
@@ -1106,9 +1136,9 @@
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'vision-item glass-panel p-1.5 rounded-2xl shadow-md border border-amber-900/20 bg-white/90';
                 itemDiv.id = item.id;
-                itemDiv.style.left = item.x + 'px';
-                itemDiv.style.top = item.y + 'px';
-                itemDiv.style.width = (item.width || 220) + 'px';
+                itemDiv.style.left = (item.x || 100) + 'px';
+                itemDiv.style.top = (item.y || 100) + 'px';
+                itemDiv.style.width = (item.width || 250) + 'px';
 
                 itemDiv.innerHTML = `
                     <div class="flex justify-end items-center mb-1 px-1">
@@ -1126,8 +1156,8 @@
                 itemDiv.addEventListener('pointerdown', (e) => {
                     if (e.target.classList.contains('resize-handle') || e.target.tagName === 'BUTTON') return;
                     isDragging = true;
-                    startX = e.clientX - item.x;
-                    startY = e.clientY - item.y;
+                    startX = e.clientX - (item.x || 100);
+                    startY = e.clientY - (item.y || 100);
                     itemDiv.setPointerCapture(e.pointerId);
                     itemDiv.style.zIndex = 1000;
                 });
@@ -1155,7 +1185,7 @@
                 handleEl.addEventListener('pointerdown', (e) => {
                     e.stopPropagation();
                     isResizing = true;
-                    startWidth = item.width || 220;
+                    startWidth = item.width || 250;
                     startMouseX = e.clientX;
                     handleEl.setPointerCapture(e.pointerId);
                     itemDiv.style.zIndex = 1000;
@@ -1165,8 +1195,8 @@
                     if (!isResizing) return;
                     const dx = e.clientX - startMouseX;
                     let newWidth = startWidth + dx;
-                    if (newWidth < 100) newWidth = 100;
-                    if (newWidth > 600) newWidth = 600;
+                    if (newWidth < 120) newWidth = 120;
+                    if (newWidth > 800) newWidth = 800;
                     item.width = newWidth;
                     itemDiv.style.width = newWidth + 'px';
                 });
