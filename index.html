@@ -1242,20 +1242,25 @@
             if (board.pinterestUrl && board.pinterestUrl.trim() !== '') {
                 pinterestBtn.innerHTML = `📌 Otwórz Pinteresta`;
                 pinterestBtn.onclick = () => window.open(board.pinterestUrl, '_blank');
+                pinterestBtn.title = 'Kliknij, aby otworzyć Pinteresta (kliknij prawym przyciskiem lub przytrzymaj, aby zmienić link)';
+                
+                // Opcjonalna zmiana linku przez dłuższe przytrzymanie/double click lub po prostu edycja przy ponownym kliknięciu jeśli chcemy, 
+                // ale tu zrobimy wygodnie: kliknięcie otwiera, a obok dodajemy maleńki subtelny znak edycji w tekście lub po prostu podwójne kliknięcie. 
+                // Albo zostawiamy jeden przycisk: jeśli kliknie, otwiera, a jak chce edytować, to ma to pod ręką. 
+                // Zróbmy tak, że pojedyncze kliknięcie otwiera, a z prawym przyciskiem myszi lub przytrzymaniem (lub małym przyciskiem w narożniku) edytuje. 
+                // Albo po prostu połączmy to: przycisk otwiera, a dodamy obok malutki dyskretny przycisk "✏️" tylko wtedy, gdy user chce zmienić, albo przycisk zmienia się w zależności od tego czy link jest. 
+                // Zgodnie z życzeniem "ma się pokazywać tylko otwórz pintresta" - niech będzie dokładnie jeden przycisk "Otwórz Pinteresta". 
+                // A jak zmienić link? Dodajmy możliwość edycji linku poprzez kliknięcie z wciśniętym klawiszem Shift lub po prostu prosty prompt podwójnym kliknięciem:
+                pinterestBtn.ondblclick = (e) => {
+                    e.preventDefault();
+                    editPinterestUrl();
+                };
+                pinterestBtn.title = "Otwórz Pinteresta (kliknij dwukrotnie, aby zmienić link)";
             } else {
                 pinterestBtn.innerHTML = `🔗 Dodaj link do Pinteresta`;
                 pinterestBtn.onclick = () => editPinterestUrl();
             }
             pinterestContainer.appendChild(pinterestBtn);
-
-            if (board.pinterestUrl && board.pinterestUrl.trim() !== '') {
-                const editPinBtn = document.createElement('button');
-                editPinBtn.className = 'text-xs bg-white/70 hover:bg-white text-slate-500 hover:text-rose-600 px-2.5 py-2 rounded-xl border border-amber-900/10 transition-all';
-                editPinBtn.innerHTML = '✏️ Link';
-                editPinBtn.title = 'Edytuj link do Pinteresta';
-                editPinBtn.onclick = () => editPinterestUrl();
-                pinterestContainer.appendChild(editPinBtn);
-            }
             
             if (board.projectId) {
                 const linkedProj = data.projects.find(p => p.id === board.projectId);
@@ -1392,7 +1397,6 @@
                 linkContainer.appendChild(btnBoard);
             }
 
-            // Obsługa zakładek w projekcie
             const activeTab = activeProj.activeTab || 'tasks';
             const tabBtnTasks = document.getElementById('tab-btn-tasks');
             const tabBtnKnowledge = document.getElementById('tab-btn-knowledge');
