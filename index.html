@@ -96,9 +96,6 @@
                 <button onclick="openUpcomingView()" id="sidebar-upcoming-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 text-slate-600 hover:bg-amber-100/40">
                     <span>🔥 Nadchodzące deadline'y</span>
                 </button>
-                <button onclick="openHobbiesOverview()" id="sidebar-hobbies-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 text-slate-600 hover:bg-amber-100/40">
-                    <span>🎨 Hobby & Pasje</span>
-                </button>
             </div>
 
             <!-- Sekcja projektów celów -->
@@ -109,6 +106,19 @@
                 </button>
             </div>
             <div id="projects-list" class="space-y-1.5 mb-6"></div>
+
+            <!-- Sekcja Hobby w menu bocznym (jeden stały element) -->
+            <div class="flex justify-between items-center mb-3">
+                <span onclick="openHobbiesOverview()" id="sidebar-hobbies-label" class="text-xs font-bold uppercase tracking-wider text-amber-900/60 cursor-pointer hover:text-[#e07a5f] transition-colors" title="Kliknij, aby otworzyć sekcję Hobby">Hobby ↗</span>
+                <button onclick="openHobbyModal()" class="text-xs text-[#e07a5f] hover:text-[#d87053] font-bold bg-amber-50 hover:bg-amber-100/70 px-2.5 py-1 rounded-lg transition-colors">
+                    + Nowe
+                </button>
+            </div>
+            <div class="space-y-1.5 mb-6">
+                <button onclick="openHobbiesOverview()" id="sidebar-hobbies-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 text-slate-600 hover:bg-amber-100/40">
+                    <span>🎨 Przegląd Hobby</span>
+                </button>
+            </div>
 
             <!-- Sekcja Tablic Marzeń -->
             <div class="flex justify-between items-center mb-3">
@@ -178,12 +188,12 @@
             </div>
         </div>
 
-        <!-- WIDOK: PRZEGLĄD HOBBY (Wszystkie hobby w postaci kafelków z możliwością wejścia) -->
+        <!-- WIDOK: PRZEGLĄD HOBBY (Kafelki z Twoimi pasjami) -->
         <div id="hobbies-overview-view" class="hidden">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-slate-800">🎨 Hobby & Pasje</h2>
-                    <p class="text-sm text-amber-900/60 mt-1">Lista Twoich pasji – kliknij w wybrane hobby, aby zarządzać jego zakładkami</p>
+                    <p class="text-sm text-amber-900/60 mt-1">Twoje pasje i inspiracje – kliknij w wybrane hobby, aby wejść do jego zakładek</p>
                 </div>
                 <button onclick="openHobbyModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md">
                     + Nowe hobby
@@ -193,7 +203,7 @@
             <div id="hobbies-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
-        <!-- WIDOK: POJEDYNCZE HOBBY (Z zakładkami: Do spróbowania, W trakcie, Spróbowane) -->
+        <!-- WIDOK: POJEDYNCZE HOBBY (Z 3 zakładkami: Do spróbowania, W trakcie, Spróbowane) -->
         <div id="hobby-view" class="hidden">
             <div class="flex items-center gap-3 mb-6">
                 <button onclick="openHobbiesOverview()" class="glass-panel px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-white transition-all shadow-xs flex items-center gap-1">
