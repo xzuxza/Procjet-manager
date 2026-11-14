@@ -96,6 +96,9 @@
                 <button onclick="openUpcomingView()" id="sidebar-upcoming-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 text-slate-600 hover:bg-amber-100/40">
                     <span>🔥 Nadchodzące deadline'y</span>
                 </button>
+                <button onclick="openHobbiesOverview()" id="sidebar-hobbies-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 text-slate-600 hover:bg-amber-100/40">
+                    <span>🎨 Hobby & Pasje</span>
+                </button>
             </div>
 
             <!-- Sekcja projektów celów -->
@@ -106,15 +109,6 @@
                 </button>
             </div>
             <div id="projects-list" class="space-y-1.5 mb-6"></div>
-
-            <!-- Sekcja Hobbvie -->
-            <div class="flex justify-between items-center mb-3">
-                <span onclick="openHobbiesOverview()" class="text-xs font-bold uppercase tracking-wider text-amber-900/60 cursor-pointer hover:text-[#e07a5f] transition-colors" title="Kliknij, aby podejrzeć wszystkie hobby">Hobby ↗</span>
-                <button onclick="openHobbyModal()" class="text-xs text-[#e07a5f] hover:text-[#d87053] font-bold bg-amber-50 hover:bg-amber-100/70 px-2.5 py-1 rounded-lg transition-colors">
-                    + Nowe
-                </button>
-            </div>
-            <div id="hobbies-list" class="space-y-1.5 mb-6"></div>
 
             <!-- Sekcja Tablic Marzeń -->
             <div class="flex justify-between items-center mb-3">
@@ -184,54 +178,36 @@
             </div>
         </div>
 
-        <!-- WIDOK: PRZEGLĄD HOBBY -->
+        <!-- WIDOK: PRZEGLĄD HOBBY (Wszystkie hobby w postaci kafelków z możliwością wejścia) -->
         <div id="hobbies-overview-view" class="hidden">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
-                    <h2 class="text-2xl font-bold text-slate-800">🎨 Przegląd Hobby</h2>
-                    <p class="text-sm text-amber-900/60 mt-1">Wszystkie Twoje pasje podzielone na statusy</p>
+                    <h2 class="text-2xl font-bold text-slate-800">🎨 Hobby & Pasje</h2>
+                    <p class="text-sm text-amber-900/60 mt-1">Lista Twoich pasji – kliknij w wybrane hobby, aby zarządzać jego zakładkami</p>
                 </div>
                 <button onclick="openHobbyModal()" class="bg-gradient-to-r from-[#e07a5f] to-[#f4a261] text-white font-medium px-5 py-2.5 rounded-xl text-sm shadow-md">
                     + Nowe hobby
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="glass-panel rounded-2xl p-4 border-t-4 border-amber-400 shadow-sm flex flex-col">
-                    <div class="flex justify-between items-center mb-4 px-1">
-                        <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">🎯 Do spróbowania</h3>
-                        <span id="count-hobby-try" class="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
-                    </div>
-                    <div id="column-hobby-try" class="space-y-4 min-h-[300px] flex-1"></div>
-                </div>
-
-                <div class="glass-panel rounded-2xl p-4 border-t-4 border-orange-400 shadow-sm flex flex-col">
-                    <div class="flex justify-between items-center mb-4 px-1">
-                        <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">⚡ W trakcie</h3>
-                        <span id="count-hobby-progress" class="bg-orange-100 text-orange-800 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
-                    </div>
-                    <div id="column-hobby-progress" class="space-y-4 min-h-[300px] flex-1"></div>
-                </div>
-
-                <div class="glass-panel rounded-2xl p-4 border-t-4 border-emerald-400 shadow-sm flex flex-col">
-                    <div class="flex justify-between items-center mb-4 px-1">
-                        <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">✨ Spróbowane</h3>
-                        <span id="count-hobby-done" class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
-                    </div>
-                    <div id="column-hobby-done" class="space-y-4 min-h-[300px] flex-1"></div>
-                </div>
-            </div>
+            <div id="hobbies-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
         <!-- WIDOK: POJEDYNCZE HOBBY (Z zakładkami: Do spróbowania, W trakcie, Spróbowane) -->
         <div id="hobby-view" class="hidden">
+            <div class="flex items-center gap-3 mb-6">
+                <button onclick="openHobbiesOverview()" class="glass-panel px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-white transition-all shadow-xs flex items-center gap-1">
+                    ← Powrót do listy hobby
+                </button>
+            </div>
+
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-amber-950/10 pb-6">
                 <div>
                     <div class="flex items-center gap-2">
                         <h2 id="hobby-view-title" class="text-2xl font-bold text-slate-800"></h2>
                         <button onclick="editHobbyName()" class="text-slate-400 hover:text-[#e07a5f] text-xs p-1" title="Edytuj nazwę hobby">✏️</button>
                     </div>
-                    <p class="text-sm text-amber-900/60 mt-1">Twoja strefa pasji i inspiracji</p>
+                    <p class="text-sm text-amber-900/60 mt-1">Zarządzaj swoimi pomysłami i postępami</p>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
                     <button onclick="deleteActiveHobby()" class="text-xs text-amber-900/40 hover:text-rose-600 transition-colors bg-white/50 px-3 py-2 rounded-xl border border-amber-950/5">🗑️ Usuń hobby</button>
@@ -619,7 +595,6 @@
             currentView: 'upcoming'
         };
 
-        // Zapewnienie kompatybilności wstecznej dla starszych zapisów w pamięci
         if (!data.hobbies) data.hobbies = [];
 
         let deadlineTarget = { type: null, id: null };
@@ -1103,7 +1078,7 @@
         function deleteActiveHobby() {
             if (confirm('Usunąć to hobby wraz z zapisanymi pozycjami?')) {
                 data.hobbies = data.hobbies.filter(h => h.id !== data.activeHobbyId);
-                openUpcomingView();
+                openHobbiesOverview();
             }
         }
 
@@ -1245,7 +1220,6 @@
 
         function render() {
             const projectsListEl = document.getElementById('projects-list');
-            const hobbiesListEl = document.getElementById('hobbies-list');
             const visionBoardsListEl = document.getElementById('vision-boards-list');
             const upcomingViewEl = document.getElementById('upcoming-view');
             const projectsOverviewViewEl = document.getElementById('projects-overview-view');
@@ -1255,13 +1229,15 @@
             const projectViewEl = document.getElementById('project-view');
             const hobbyViewEl = document.getElementById('hobby-view');
             const taskDetailViewEl = document.getElementById('task-detail-view');
+            
             const sidebarUpcomingBtn = document.getElementById('sidebar-upcoming-btn');
+            const sidebarHobbiesBtn = document.getElementById('sidebar-hobbies-btn');
 
             projectsListEl.innerHTML = '';
-            hobbiesListEl.innerHTML = '';
             visionBoardsListEl.innerHTML = '';
 
-            sidebarUpcomingBtn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 flex items-center gap-2 ${data.currentView === 'upcoming' ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
+            sidebarUpcomingBtn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${data.currentView === 'upcoming' ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
+            sidebarHobbiesBtn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${data.currentView === 'hobbies_overview' || data.currentView === 'hobby' ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
 
             if (data.projects) {
                 data.projects.forEach(proj => {
@@ -1271,17 +1247,6 @@
                     btn.innerHTML = `<span>${escapeHtml(proj.name)}</span>`;
                     btn.onclick = () => setActiveProject(proj.id);
                     projectsListEl.appendChild(btn);
-                });
-            }
-
-            if (data.hobbies) {
-                data.hobbies.forEach(hobby => {
-                    const isActive = hobby.id === data.activeHobbyId && data.currentView === 'hobby';
-                    const btn = document.createElement('button');
-                    btn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-between ${isActive ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
-                    btn.innerHTML = `<span>🎨 ${escapeHtml(hobby.name)}</span>`;
-                    btn.onclick = () => setActiveHobby(hobby.id);
-                    hobbiesListEl.appendChild(btn);
                 });
             }
 
@@ -1447,46 +1412,43 @@
         }
 
         function renderHobbiesOverview() {
-            const colTry = document.getElementById('column-hobby-try');
-            const colProgress = document.getElementById('column-hobby-progress');
-            const colDone = document.getElementById('column-hobby-done');
+            const gridEl = document.getElementById('hobbies-grid');
+            gridEl.innerHTML = '';
 
-            colTry.innerHTML = '';
-            colProgress.innerHTML = '';
-            colDone.innerHTML = '';
-
-            let counts = { try: 0, progress: 0, done: 0 };
-
-            if (data.hobbies) {
-                data.hobbies.forEach(hobby => {
-                    const card = document.createElement('div');
-                    card.className = 'glass-panel bg-white/90 p-4 rounded-2xl border border-amber-900/10 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between mb-3';
-                    card.onclick = () => setActiveHobby(hobby.id);
-
-                    const itemCount = hobby.items ? hobby.items.length : 0;
-                    card.innerHTML = `
-                        <div>
-                            <h4 class="font-bold text-slate-800 text-base mb-2">🎨 ${escapeHtml(hobby.name)}</h4>
-                            <p class="text-xs text-amber-900/60 mb-3">${itemCount} pozycji w bazie</p>
-                        </div>
-                        <div class="flex justify-end pt-3 border-t border-amber-950/5">
-                            <span class="text-xs font-bold text-[#e07a5f]">Otwórz hobby →</span>
-                        </div>
-                    `;
-                    colTry.appendChild(card); // Przegląd ogólny wyświetla hobby w formie kart
-                    counts.try++;
-                });
+            if (!data.hobbies || data.hobbies.length === 0) {
+                gridEl.innerHTML = `
+                    <div class="glass-panel p-8 text-center rounded-2xl text-amber-900/50 text-sm col-span-full">
+                        Brak dodanych hobby. Kliknij "+ Nowe hobby" w prawym górnym rogu, aby zacząć!
+                    </div>
+                `;
+                return;
             }
 
-            document.getElementById('count-hobby-try').innerText = counts.try;
-            document.getElementById('count-hobby-progress').innerText = 0;
-            document.getElementById('count-hobby-done').innerText = 0;
+            data.hobbies.forEach(hobby => {
+                const count = hobby.items ? hobby.items.length : 0;
+                const card = document.createElement('div');
+                card.className = 'glass-panel bg-white/90 p-6 rounded-3xl border border-amber-900/10 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between';
+                card.onclick = () => setActiveHobby(hobby.id);
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start gap-2 mb-3">
+                            <h3 class="font-bold text-slate-800 text-lg">🎨 ${escapeHtml(hobby.name)}</h3>
+                        </div>
+                        <p class="text-xs text-amber-900/60 mb-4">${count} pozycji w bazie</p>
+                    </div>
+                    <div class="flex justify-end pt-4 border-t border-amber-950/5">
+                        <span class="text-xs font-bold text-[#e07a5f]">Otwórz hobby →</span>
+                    </div>
+                `;
+                gridEl.appendChild(card);
+            });
         }
 
         function renderHobbyView() {
             const activeHobby = data.hobbies.find(h => h.id === data.activeHobbyId);
             if (!activeHobby) {
-                openUpcomingView();
+                openHobbiesOverview();
                 return;
             }
 
