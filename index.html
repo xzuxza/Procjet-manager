@@ -107,9 +107,9 @@
             </div>
             <div id="projects-list" class="space-y-1.5 mb-6"></div>
 
-            <!-- Sekcja Hobby w menu bocznym (jeden stały element) -->
+            <!-- Sekcja Hobby w menu bocznym (kliknięcie w nagłówek otwiera przegląd) -->
             <div class="flex justify-between items-center mb-3">
-                <span onclick="openHobbiesOverview()" id="sidebar-hobbies-label" class="text-xs font-bold uppercase tracking-wider text-amber-900/60 cursor-pointer hover:text-[#e07a5f] transition-colors" title="Kliknij, aby otworzyć sekcję Hobby">Hobby ↗</span>
+                <span onclick="openHobbiesOverview()" id="sidebar-hobbies-label" class="text-xs font-bold uppercase tracking-wider text-amber-900/60 cursor-pointer hover:text-[#e07a5f] transition-colors" title="Kliknij, aby otworzyć przegląd hobby">Hobby ↗</span>
                 <button onclick="openHobbyModal()" class="text-xs text-[#e07a5f] hover:text-[#d87053] font-bold bg-amber-50 hover:bg-amber-100/70 px-2.5 py-1 rounded-lg transition-colors">
                     + Nowe
                 </button>
@@ -1248,6 +1248,9 @@
 
             sidebarUpcomingBtn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${data.currentView === 'upcoming' ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
             sidebarHobbiesBtn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${data.currentView === 'hobbies_overview' || data.currentView === 'hobby' ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
+            
+            // Ustawienie tekstu przycisku w menu na "Hobby" zgodnie z życzeniem
+            sidebarHobbiesBtn.querySelector('span').innerText = '🎨 Hobby';
 
             if (data.projects) {
                 data.projects.forEach(proj => {
