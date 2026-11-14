@@ -107,16 +107,11 @@
             </div>
             <div id="projects-list" class="space-y-1.5 mb-6"></div>
 
-            <!-- Sekcja Hobby w menu bocznym (kliknięcie w nagłówek otwiera przegląd) -->
-            <div class="flex justify-between items-center mb-3">
+            <!-- Sekcja Hobby w menu bocznym (tylko elegancki nagłówek z przyciskiem + Nowe) -->
+            <div class="flex justify-between items-center mb-6">
                 <span onclick="openHobbiesOverview()" id="sidebar-hobbies-label" class="text-xs font-bold uppercase tracking-wider text-amber-900/60 cursor-pointer hover:text-[#e07a5f] transition-colors" title="Kliknij, aby otworzyć przegląd hobby">Hobby ↗</span>
                 <button onclick="openHobbyModal()" class="text-xs text-[#e07a5f] hover:text-[#d87053] font-bold bg-amber-50 hover:bg-amber-100/70 px-2.5 py-1 rounded-lg transition-colors">
                     + Nowe
-                </button>
-            </div>
-            <div class="space-y-1.5 mb-6">
-                <button onclick="openHobbiesOverview()" id="sidebar-hobbies-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 text-slate-600 hover:bg-amber-100/40">
-                    <span>🎨 Przegląd Hobby</span>
                 </button>
             </div>
 
@@ -1241,16 +1236,18 @@
             const taskDetailViewEl = document.getElementById('task-detail-view');
             
             const sidebarUpcomingBtn = document.getElementById('sidebar-upcoming-btn');
-            const sidebarHobbiesBtn = document.getElementById('sidebar-hobbies-btn');
+            const sidebarHobbiesLabel = document.getElementById('sidebar-hobbies-label');
 
             projectsListEl.innerHTML = '';
             visionBoardsListEl.innerHTML = '';
 
             sidebarUpcomingBtn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${data.currentView === 'upcoming' ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
-            sidebarHobbiesBtn.className = `w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${data.currentView === 'hobbies_overview' || data.currentView === 'hobby' ? 'sidebar-item-active' : 'text-slate-600 hover:bg-amber-100/40'}`;
             
-            // Ustawienie tekstu przycisku w menu na "Hobby" zgodnie z życzeniem
-            sidebarHobbiesBtn.querySelector('span').innerText = '🎨 Hobby';
+            if (data.currentView === 'hobbies_overview' || data.currentView === 'hobby') {
+                sidebarHobbiesLabel.classList.add('text-[#e07a5f]');
+            } else {
+                sidebarHobbiesLabel.classList.remove('text-[#e07a5f]');
+            }
 
             if (data.projects) {
                 data.projects.forEach(proj => {
@@ -1431,7 +1428,7 @@
             if (!data.hobbies || data.hobbies.length === 0) {
                 gridEl.innerHTML = `
                     <div class="glass-panel p-8 text-center rounded-2xl text-amber-900/50 text-sm col-span-full">
-                        Brak dodanych hobby. Kliknij "+ Nowe hobby" w prawym górnym rogu, aby zacząć!
+                        Brak dodanych hobby. Kliknij "+ Nowe" obok nagłówka Hobby, aby zacząć!
                     </div>
                 `;
                 return;
